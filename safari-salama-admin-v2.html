@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafariSalama — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0b1120; --surface: #131c2e; --surface2: #1a2540;
+  --border: #1f2f4a; --green: #00c96b; --green-dim: rgba(0,201,107,0.12);
+  --gold: #f5a623; --gold-dim: rgba(245,166,35,0.12);
+  --red: #ff4f4f; --red-dim: rgba(255,79,79,0.1);
+  --blue: #4f9eff; --blue-dim: rgba(79,158,255,0.1);
+  --text: #e8eef8; --muted: #5a7090; --muted2: #8a9ab0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; }
+
+/* LOGIN */
+.login-screen { position:fixed; inset:0; z-index:999; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:24px; }
+.login-box { background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:48px 40px; width:100%; max-width:420px; text-align:center; box-shadow:0 40px 80px rgba(0,0,0,0.4); animation:fadeUp 0.5s ease both; }
+.login-logo { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; color:var(--green); margin-bottom:6px; }
+.login-sub { font-size:0.85rem; color:var(--muted2); margin-bottom:36px; }
+.login-input { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:12px; padding:13px 16px; font-size:0.95rem; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; margin-bottom:16px; transition:border-color 0.2s; }
+.login-input:focus { border-color:var(--green); }
+.login-input::placeholder { color:var(--muted); }
+.btn-login { width:100%; background:var(--green); color:#0b1120; border:none; cursor:pointer; padding:14px; border-radius:12px; font-size:1rem; font-weight:700; font-family:'Syne',sans-serif; transition:all 0.2s; }
+.btn-login:hover { background:#00e87a; }
+.login-hint { font-size:0.78rem; color:var(--muted); margin-top:16px; }
+.login-hint span { color:var(--green); }
+.login-error { color:var(--red); font-size:0.82rem; margin-top:10px; display:none; }
+
+/* SIDEBAR */
+.sidebar { width:240px; min-height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:50; transition:transform 0.3s; }
+.sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid var(--border); }
+.sidebar-logo-text { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:800; color:var(--green); }
+.sidebar-logo-sub { font-size:0.72rem; color:var(--muted); margin-top:2px; }
+.sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+.nav-section-label { font-size:0.68rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); padding:0 8px; margin:16px 0 6px; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:all 0.2s; font-size:0.88rem; font-weight:500; color:var(--muted2); margin-bottom:2px; }
+.nav-item:hover { background:var(--surface2); color:var(--text); }
+.nav-item.active { background:var(--green-dim); color:var(--green); font-weight:600; }
+.nav-icon { font-size:1.1rem; width:22px; text-align:center; }
+.sidebar-footer { padding:16px 12px; border-top:1px solid var(--border); }
+.admin-info { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:var(--surface2); }
+.admin-avatar { width:36px; height:36px; border-radius:50%; background:var(--green-dim); border:2px solid var(--green); display:flex; align-items:center; justify-content:center; font-size:1rem; }
+.admin-name { font-size:0.85rem; font-weight:600; }
+.admin-role { font-size:0.72rem; color:var(--muted2); }
+.btn-logout { width:100%; background:transparent; border:1px solid var(--border); color:var(--muted2); cursor:pointer; padding:8px; border-radius:8px; font-size:0.8rem; font-family:'DM Sans',sans-serif; margin-top:8px; transition:all 0.2s; }
+.btn-logout:hover { border-color:var(--red); color:var(--red); }
+
+/* MAIN */
+.main { margin-left:240px; flex:1; min-height:100vh; display:flex; flex-direction:column; }
+.topbar { height:64px; padding:0 28px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--surface); position:sticky; top:0; z-index:40; }
+.topbar-title { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:700; }
+.topbar-right { display:flex; align-items:center; gap:12px; }
+.topbar-time { font-size:0.8rem; color:var(--muted2); }
+.hamburger { display:none; background:none; border:none; color:var(--text); font-size:1.3rem; cursor:pointer; }
+.content { padding:28px; flex:1; }
+
+/* PAGES */
+.page { display:none; }
+.page.active { display:block; animation:fadeUp 0.3s ease; }
+
+/* STAT CARDS */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px; transition:all 0.2s; }
+.stat-card:hover { border-color:var(--green); transform:translateY(-2px); }
+.stat-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.stat-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+.si-g { background:var(--green-dim); } .si-gold { background:var(--gold-dim); } .si-blue { background:var(--blue-dim); } .si-red { background:var(--red-dim); }
+.stat-trend { font-size:0.75rem; font-weight:600; padding:3px 8px; border-radius:8px; }
+.trend-up { background:var(--green-dim); color:var(--green); }
+.stat-value { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; margin-bottom:4px; }
+.stat-label { font-size:0.8rem; color:var(--muted2); }
+
+/* TABLES */
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.section-title-sm { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; }
+.btn-primary { background:var(--green); color:#0b1120; border:none; cursor:pointer; padding:9px 18px; border-radius:10px; font-size:0.85rem; font-weight:700; font-family:'DM Sans',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s; }
+.btn-primary:hover { background:#00e87a; }
+.btn-secondary { background:transparent; color:var(--muted2); border:1px solid var(--border); cursor:pointer; padding:8px 16px; border-radius:10px; font-size:0.83rem; font-weight:500; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.btn-secondary:hover { border-color:var(--green); color:var(--green); }
+.table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:24px; overflow-x:auto; }
+.data-table { width:100%; border-collapse:collapse; min-width:600px; }
+.data-table th { background:var(--surface2); padding:12px 16px; font-size:0.75rem; font-weight:700; color:var(--muted2); text-align:left; letter-spacing:0.06em; text-transform:uppercase; border-bottom:1px solid var(--border); }
+.data-table td { padding:14px 16px; font-size:0.88rem; border-bottom:1px solid rgba(31,47,74,0.5); vertical-align:middle; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table tr:hover td { background:rgba(255,255,255,0.02); }
+.badge { display:inline-flex; align-items:center; font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:8px; }
+.badge-green { background:var(--green-dim); color:var(--green); }
+.badge-gold { background:var(--gold-dim); color:var(--gold); }
+.badge-red { background:var(--red-dim); color:var(--red); }
+.badge-blue { background:var(--blue-dim); color:var(--blue); }
+.action-btns { display:flex; gap:6px; }
+.btn-edit { background:var(--blue-dim); color:var(--blue); border:none; cursor:pointer; padding:5px 12px; border-radius:7px; font-size:0.78rem; font-weight:600; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.btn-edit:hover { background:var(--blue); color:white; }
+.btn-del { background:var(--red-dim); color:var(--red); border:none; cursor:pointer; padding:5px 12px; border-radius:7px; font-size:0.78rem; font-weight:600; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.btn-del:hover { background:var(--red); color:white; }
+.btn-approve { background:var(--green-dim); color:var(--green); border:none; cursor:pointer; padding:5px 12px; border-radius:7px; font-size:0.78rem; font-weight:600; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.btn-approve:hover { background:var(--green); color:#0b1120; }
+
+/* MODAL */
+.modal-overlay { position:fixed; inset:0; z-index:200; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity 0.25s; }
+.modal-overlay.active { opacity:1; pointer-events:all; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; transform:translateY(16px); transition:transform 0.25s; }
+.modal-overlay.active .modal { transform:translateY(0); }
+.modal-head { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.modal-head-title { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; }
+.modal-close { background:var(--surface2); border:none; cursor:pointer; width:32px; height:32px; border-radius:8px; color:var(--muted2); font-size:1rem; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.modal-close:hover { background:var(--red-dim); color:var(--red); }
+.modal-body { padding:24px; }
+.form-group { margin-bottom:16px; }
+.form-label { display:block; font-size:0.8rem; font-weight:600; color:var(--muted2); margin-bottom:6px; }
+.form-input, .form-select, .form-textarea { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:11px 14px; font-size:0.9rem; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color:var(--green); }
+.form-input::placeholder, .form-textarea::placeholder { color:var(--muted); }
+.form-select option { background:var(--surface2); }
+.form-textarea { resize:vertical; min-height:80px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-footer { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+
+/* LOADING */
+.loading-row td { text-align:center; color:var(--muted2); padding:32px !important; }
+.spinner { display:inline-block; width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* TOAST */
+.toast { position:fixed; bottom:24px; right:24px; background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:12px 20px; border-radius:12px; font-size:0.88rem; font-weight:500; opacity:0; transform:translateY(10px); transition:all 0.3s; z-index:999; box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+.toast.show { opacity:1; transform:translateY(0); }
+.toast.success { border-color:var(--green); }
+.toast.error { border-color:var(--red); }
+
+/* DB STATUS */
+.db-status { display:flex; align-items:center; gap:6px; font-size:0.75rem; font-weight:600; padding:4px 10px; border-radius:8px; background:var(--green-dim); color:var(--green); }
+.db-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ACTIVITY */
+.activity-list { display:flex; flex-direction:column; gap:1px; }
+.activity-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:10px; transition:background 0.2s; }
+.activity-item:hover { background:var(--surface2); }
+.activity-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+.activity-text { flex:1; }
+.activity-main { font-size:0.88rem; font-weight:500; }
+.activity-sub { font-size:0.76rem; color:var(--muted2); margin-top:1px; }
+.activity-time { font-size:0.74rem; color:var(--muted); }
+
+.empty-state { text-align:center; padding:48px 24px; color:var(--muted2); font-size:0.9rem; }
+.empty-icon { font-size:2.5rem; margin-bottom:12px; }
+
+/* ADS */
+.ads-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+.ad-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:all 0.2s; }
+.ad-card:hover { border-color:var(--gold); }
+.ad-banner { height:80px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:800; font-family:'Syne',sans-serif; }
+.ad-info { padding:14px 16px; }
+.ad-footer { display:flex; align-items:center; justify-content:space-between; margin-top:10px; }
+
+@media(max-width:768px){
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; }
+  .hamburger { display:flex; }
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .content { padding:16px; }
+  .form-row { grid-template-columns:1fr; }
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+.overlay-bg { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:49; display:none; }
+.overlay-bg.show { display:block; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🌿 SafariSalama</div>
+    <div class="login-sub">Admin Dashboard — Ingia kwa akaunti yako</div>
+    <div style="text-align:left">
+      <div style="font-size:0.8rem;font-weight:600;color:var(--muted2);margin-bottom:6px">Jina la Mtumiaji</div>
+      <input class="login-input" type="text" placeholder="admin" id="loginUser">
+      <div style="font-size:0.8rem;font-weight:600;color:var(--muted2);margin-bottom:6px">Nywila</div>
+      <input class="login-input" type="password" placeholder="••••••••" id="loginPass">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Ingia Dashboard →</button>
+    <div class="login-error" id="loginError">❌ Jina au nywila si sahihi</div>
+    <div class="login-hint">Ingia kwa: <span>admin</span> / <span>safarisalama2025</span></div>
+  </div>
+</div>
+
+<div class="overlay-bg" id="overlayBg" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-text">🌿 SafariSalama</div>
+    <div class="sidebar-logo-sub">Admin Control Panel</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Muhtasari</div>
+    <div class="nav-item active" onclick="goPage('dashboard',this)"><span class="nav-icon">📊</span> Dashboard</div>
+    <div class="nav-section-label">Usimamizi</div>
+    <div class="nav-item" onclick="goPage('lodges',this)"><span class="nav-icon">🏨</span> Lodges</div>
+    <div class="nav-item" onclick="goPage('bookings',this)"><span class="nav-icon">📋</span> Bookings</div>
+    <div class="nav-item" onclick="goPage('boda',this)"><span class="nav-icon">🛵</span> Bodaboda</div>
+    <div class="nav-item" onclick="goPage('restaurants',this)"><span class="nav-icon">🍽️</span> Migahawa</div>
+    <div class="nav-section-label">Biashara</div>
+    <div class="nav-item" onclick="goPage('ads',this)"><span class="nav-icon">📢</span> Matangazo</div>
+    <div class="nav-section-label">Mfumo</div>
+    <div class="nav-item" onclick="goPage('settings',this)"><span class="nav-icon">⚙️</span> Mipangilio</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-info">
+      <div class="admin-avatar">👤</div>
+      <div><div class="admin-name">Admin Mkuu</div><div class="admin-role">Super Admin</div></div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">🚪 Toka</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainArea">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title" id="pageTitle">📊 Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="db-status"><div class="db-dot"></div> Database Hai</div>
+      <div class="topbar-time" id="clock"></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid" id="dashStats">
+        <div class="stat-card"><div class="stat-header"><div class="stat-icon si-g">🏨</div></div><div class="stat-value" style="color:var(--green)" id="statLodges">...</div><div class="stat-label">Lodges Zilizosajiliwa</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-icon si-gold">📋</div></div><div class="stat-value" style="color:var(--gold)" id="statBookings">...</div><div class="stat-label">Bookings Jumla</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-icon si-blue">🛵</div></div><div class="stat-value" style="color:var(--blue)" id="statBoda">...</div><div class="stat-label">Bodaboda Waliojisajili</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-icon si-gold">🍽️</div></div><div class="stat-value" style="color:var(--gold)" id="statRest">...</div><div class="stat-label">Migahawa Iliyosajiliwa</div></div>
+      </div>
+      <div class="section-header"><div class="section-title-sm">⚡ Lodges Zinazosubiri Ukaguzi</div></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Jina la Lodge</th><th>Mji</th><th>Mmiliki</th><th>Bei</th><th>Hali</th><th>Vitendo</th></tr></thead>
+          <tbody id="pendingLodges"><tr class="loading-row"><td colspan="6"><span class="spinner"></span>Inapakia...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LODGES -->
+    <div class="page" id="page-lodges">
+      <div class="section-header">
+        <div class="section-title-sm">🏨 Lodges Zote</div>
+        <button class="btn-primary" onclick="openLodgeModal()">➕ Ongeza Lodge</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Jina</th><th>Mji</th><th>Bei/Usiku</th><th>Mmiliki</th><th>Hali</th><th>Vitendo</th></tr></thead>
+          <tbody id="lodgesTbody"><tr class="loading-row"><td colspan="6"><span class="spinner"></span>Inapakia...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BOOKINGS -->
+    <div class="page" id="page-bookings">
+      <div class="section-header"><div class="section-title-sm">📋 Bookings Zote</div></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Mgeni</th><th>Simu</th><th>Lodge</th><th>Tarehe</th><th>Kiasi</th><th>Hali</th></tr></thead>
+          <tbody id="bookingsTbody"><tr class="loading-row"><td colspan="6"><span class="spinner"></span>Inapakia...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BODABODA -->
+    <div class="page" id="page-boda">
+      <div class="section-header">
+        <div class="section-title-sm">🛵 Bodaboda Wote</div>
+        <button class="btn-primary" onclick="openBodaModal()">➕ Ongeza Bodaboda</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Jina</th><th>Simu</th><th>Mji/Lodge</th><th>Hali</th><th>Vitendo</th></tr></thead>
+          <tbody id="bodaTbody"><tr class="loading-row"><td colspan="5"><span class="spinner"></span>Inapakia...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RESTAURANTS -->
+    <div class="page" id="page-restaurants">
+      <div class="section-header">
+        <div class="section-title-sm">🍽️ Migahawa</div>
+        <button class="btn-primary" onclick="openRestModal()">➕ Ongeza Mgahawa</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Jina</th><th>Mji</th><th>Aina ya Chakula</th><th>Simu</th><th>Hali</th><th>Vitendo</th></tr></thead>
+          <tbody id="restTbody"><tr class="loading-row"><td colspan="6"><span class="spinner"></span>Inapakia...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADS -->
+    <div class="page" id="page-ads">
+      <div class="section-header">
+        <div class="section-title-sm">📢 Matangazo</div>
+        <button class="btn-primary" onclick="openAdModal()">➕ Ongeza Tangazo</button>
+      </div>
+      <div class="ads-grid" id="adsGrid"><div class="empty-state"><div class="empty-icon">📢</div>Hakuna matangazo bado</div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="section-title-sm" style="margin-bottom:20px">⚙️ Mipangilio</div>
+      <div class="table-wrap" style="padding:24px;max-width:500px">
+        <div class="form-group"><label class="form-label">Jina la App</label><input class="form-input" value="SafariSalama"></div>
+        <div class="form-group"><label class="form-label">Barua Pepe ya Admin</label><input class="form-input" value="admin@safarisalama.co.tz"></div>
+        <div class="form-group"><label class="form-label">Commission kwa Booking (%)</label><input class="form-input" type="number" value="3"></div>
+        <div class="form-group"><label class="form-label">Ada ya Mwaka kwa Lodge (TZS)</label><input class="form-input" type="number" value="50000"></div>
+        <button class="btn-primary" onclick="showToast('Mipangilio imehifadhiwa ✅','success')" style="margin-top:8px">💾 Hifadhi</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBox"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== SUPABASE SETUP =====
+const SUPABASE_URL = 'https://xwwleevjwvnqhzlcjsym.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_SCR1M3atMU6dnugeJ3E_kg_vPFfKGxD';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ===== LOGIN =====
+function doLogin() {
+  const u = document.getElementById('loginUser').value;
+  const p = document.getElementById('loginPass').value;
+  if (u === 'admin' && p === 'safarisalama2025') {
+    document.getElementById('loginScreen').style.display = 'none';
+    loadAll();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+function doLogout() { document.getElementById('loginScreen').style.display = 'flex'; }
+
+// ===== CLOCK =====
+function updateClock() { document.getElementById('clock').textContent = new Date().toLocaleTimeString('sw-TZ',{hour:'2-digit',minute:'2-digit'}); }
+updateClock(); setInterval(updateClock, 1000);
+
+// ===== NAV =====
+const pageTitles = { dashboard:'📊 Dashboard', lodges:'🏨 Lodges', bookings:'📋 Bookings', boda:'🛵 Bodaboda', restaurants:'🍽️ Migahawa', ads:'📢 Matangazo', settings:'⚙️ Mipangilio' };
+function goPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[id];
+  closeSidebar();
+  if(id==='lodges') loadLodges();
+  if(id==='bookings') loadBookings();
+  if(id==='boda') loadBoda();
+  if(id==='restaurants') loadRest();
+  if(id==='ads') loadAds();
+}
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlayBg').classList.toggle('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlayBg').classList.remove('show'); }
+
+// ===== LOAD ALL =====
+async function loadAll() {
+  loadDashboard();
+}
+
+// ===== DASHBOARD =====
+async function loadDashboard() {
+  try {
+    const [l, b, bo, r] = await Promise.all([
+      db.from('lodges').select('*', {count:'exact'}),
+      db.from('bookings').select('*', {count:'exact'}),
+      db.from('bodaboda').select('*', {count:'exact'}),
+      db.from('restaurants').select('*', {count:'exact'}),
+    ]);
+    document.getElementById('statLodges').textContent = l.count ?? 0;
+    document.getElementById('statBookings').textContent = b.count ?? 0;
+    document.getElementById('statBoda').textContent = bo.count ?? 0;
+    document.getElementById('statRest').textContent = r.count ?? 0;
+
+    // pending lodges
+    const { data: pending } = await db.from('lodges').select('*').eq('status','pending').order('created_at',{ascending:false}).limit(10);
+    const tbody = document.getElementById('pendingLodges');
+    if (!pending || pending.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted2);padding:24px">✅ Hakuna lodge zinazosubiri ukaguzi</td></tr>';
+    } else {
+      tbody.innerHTML = pending.map(l => `
+        <tr>
+          <td><b>${l.name}</b></td>
+          <td>${l.city}</td>
+          <td>${l.owner_name||'—'}</td>
+          <td>TZS ${(l.price||0).toLocaleString()}</td>
+          <td><span class="badge badge-gold">Inasubiri</span></td>
+          <td><div class="action-btns">
+            <button class="btn-approve" onclick="approveLodge('${l.id}')">✅ Kuidhinisha</button>
+            <button class="btn-del" onclick="deleteLodge('${l.id}')">🗑️ Kataa</button>
+          </div></td>
+        </tr>`).join('');
+    }
+  } catch(e) { showToast('Hitilafu ya database: '+e.message,'error'); }
+}
+
+// ===== LODGES =====
+async function loadLodges() {
+  document.getElementById('lodgesTbody').innerHTML = '<tr class="loading-row"><td colspan="6"><span class="spinner"></span>Inapakia...</td></tr>';
+  const { data, error } = await db.from('lodges').select('*').order('created_at',{ascending:false});
+  if (error) { showToast('Hitilafu: '+error.message,'error'); return; }
+  if (!data || data.length === 0) {
+    document.getElementById('lodgesTbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted2);padding:32px">Hakuna lodges bado. Ongeza ya kwanza!</td></tr>';
+    return;
+  }
+  document.getElementById('lodgesTbody').innerHTML = data.map(l => `
+    <tr>
+      <td><b>${l.name}</b></td>
+      <td>${l.city}</td>
+      <td>TZS ${(l.price||0).toLocaleString()}</td>
+      <td>${l.owner_name||'—'}</td>
+      <td><span class="badge ${l.status==='active'?'badge-green':l.status==='pending'?'badge-gold':'badge-red'}">${l.status==='active'?'Hai':l.status==='pending'?'Inasubiri':'Imezimwa'}</span></td>
+      <td><div class="action-btns">
+        ${l.status==='pending'?`<button class="btn-approve" onclick="approveLodge('${l.id}')">✅ Idhinisha</button>`:''}
+        <button class="btn-del" onclick="deleteLodge('${l.id}')">🗑️ Futa</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+async function approveLodge(id) {
+  const { error } = await db.from('lodges').update({status:'active'}).eq('id',id);
+  if (error) { showToast('Hitilafu: '+error.message,'error'); return; }
+  showToast('Lodge imeidhinishwa ✅','success');
+  loadDashboard(); loadLodges();
+}
+
+async function deleteLodge(id) {
+  if (!confirm('Una uhakika unataka kufuta lodge hii?')) return;
+  const { error } = await db.from('lodges').delete().eq('id',id);
+  if (error) { showToast('Hitilafu: '+error.message,'error'); return; }
+  showToast('Lodge imefutwa','error');
+  loadDashboard(); loadLodges();
+}
+
+function openLodgeModal(data) {
+  document.getElementById('modalBox').innerHTML = `
+    <div class="modal-head"><div class="modal-head-title">🏨 Ongeza Lodge</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Jina la Lodge *</label><input class="form-input" id="f-lname" placeholder="mf. Kigoma Sunset Lodge"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Mji *</label>
+          <select class="form-select" id="f-city">
+            <option value="">— Chagua —</option>
+            <option>Dar es Salaam</option><option>Mwanza</option><option>Arusha</option>
+            <option>Dodoma</option><option>Kigoma</option><option>Mtwara</option>
+            <option>Morogoro</option><option>Tabora</option><option>Tanga</option><option>Mbeya</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Bei/Usiku (TZS) *</label><input class="form-input" id="f-price" type="number" placeholder="25000"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Jina la Mmiliki</label><input class="form-input" id="f-owner" placeholder="Jina la mmiliki"></div>
+      <div class="form-group"><label class="form-label">Simu ya Mmiliki</label><input class="form-input" id="f-phone" placeholder="07xx xxx xxx"></div>
+      <div class="form-group"><label class="form-label">Maelezo</label><textarea class="form-textarea" id="f-desc" placeholder="Elezea lodge hii..."></textarea></div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-secondary" onclick="closeModal()">Ghairi</button>
+      <button class="btn-primary" onclick="saveLodge()">💾 Hifadhi</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+async function saveLodge() {
+  const name = document.getElementById('f-lname').value.trim();
+  const city = document.getElementById('f-city').value;
+  const price = parseInt(document.getElementById('f-price').value)||0;
+  const owner_name = document.getElementById('f-owner').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const description = document.getElementById('f-desc').value.trim();
+  if (!name || !city || !price) { showToast('Jaza sehemu zote zinazohitajika *','error'); return; }
+  const { error } = await db.from('lodges').insert([{name,city,price,owner_name,phone,description,status:'active'}]);
+  if (error) { showToast('Hitilafu: '+error.message,'error'); return; }
+  showToast(`Lodge "${name}" imehifadhiwa ✅`,'success');
+  closeModal(); loadLodges(); loadDashboard();
+}
+
+// ===== BOOKINGS =====
+async function loadBookings() {
+  document.getElementById('bookingsTbody').innerHTML = '<tr class="loading-row"><td colspan="6"><span class="spinner"></span>Inapakia...</td></tr>';
+  const { data, error } = await db.from('bookings').select('*').order('created_at',{ascending:false});
+  if (error) { showToast('Hitilafu: '+error.message,'error'); return; }
+  if (!data || data.length === 0) {
+    document.getElementById('bookingsTbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted2);padding:32px">Hakuna bookings bado</td></tr>';
+    return;
+  }
+  document.getElementById('bookingsTbody').innerHTML = data.map(b => `
+    <tr>
+      <td><b>${b.guest_name}</b></td>
+      <td>${b.guest_phone}</td>
+      <td>${b.lodge_name||'—'}</td>
+      <td>${b.check_in||'—'}</td>
+      <td>TZS ${(b.amount||0).toLocaleString()}</td>
+      <td><span class="badge ${b.status==='confirmed'?'badge-green':b.status==='pending'?'badge-gold':'badge-red'}">${b.status==='confirmed'?'Imethibitishwa':b.status==='pending'?'Inasubiri':'Imefutwa'}</span></td>
+    </tr>`).join('');
+}
+
+// ===== BODABODA =====
+async function loadBoda() {
+  document.getElementById('bodaTbody').innerHTML = '<tr class="loading-row"><td colspan="5"><span class="spinner"></span>Inapakia...</td></tr>';
+  const { data, error } = await db.from('bodaboda').select('*').order('created_at',{ascending:false});
+  if (error) { showToast('Hitilafu: '+error.message,'error'); return; }
+  if (!data || data.length === 0) {
+    document.getElementById('bodaTbody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted2);padding:32px">Hakuna bodaboda bado</td></tr>';
+    return;
+  }
+  document.getElementById('bodaTbody').innerHTML = data.map(b => `
+    <tr>
+      <td><b>${b.name}</b></td>
+      <td>${b.phone}</td>
+      <td>${b.lodge_name||b.city||'—'}</td>
+      <td><span class="badge ${b.status==='active'?'badge-green':'badge-red'}">${b.status==='active'?'Hai':'Imezimwa'}</span></td>
+      <td><div class="action-btns"><button class="btn-del" onclick="deleteBoda('${b.id}')">🗑️ Futa</button></div></td>
+    </tr>`).join('');
+}
+
+function openBodaModal() {
+  document.getElementById('modalBox').innerHTML = `
+    <div class="modal-head"><div class="modal-head-title">🛵 Ongeza Bodaboda</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Jina Kamili *</label><input class="form-input" id="f-bname" placeholder="mf. Juma Ally"></div>
+      <div class="form-group"><label class="form-label">Namba ya Simu *</label><input class="form-input" id="f-bphone" placeholder="07xx xxx xxx"></div>
+      <div class="form-group"><label class="form-label">Mji</label><select class="form-select" id="f-bcity"><option>Dar es Salaam</option><option>Mwanza</option><option>Arusha</option><option>Dodoma</option><option>Kigoma</option><option>Mtwara</option></select></div>
+      <div class="form-group"><label class="form-label">Lodge ya Karibu</label><input class="form-input" id="f-blodge" placeholder="mf. Kigoma Sunset Lodge"></div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-secondary" onclick="closeModal()">Ghairi</button>
+      <button class="btn-primary" onclick="saveBoda()">💾 Hifadhi</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+async function saveBoda() {
+  const name = document.getElementById('f-bname').value.trim();
+  const phone = document.getElementById('f-bphone').value.trim();
+  const city = document.getElementById('f-bcity').value;
+  const lodge_name = document.getElementById('f-blodge').value.trim();
+  if (!name || !phone) { showToast('Jaza jina na simu','error'); return; }
+  const { error } = await db.from('bodaboda').insert([{name,phone,city,lodge_name,status:'active'}]);
+  if (error) { showToast('Hitilafu: '+error.message,'error'); return; }
+  showToast(`Bodaboda "${name}" amehifadhiwa ✅`,'success');
+  closeModal(); loadBoda();
+}
+
+async function deleteBoda(id) {
+  if (!confirm('Una uhakika?')) return;
+  await db.from('bodaboda').delete().eq('id',id);
+  showToast('Bodaboda amefutwa','error'); loadBoda();
+}
+
+// ===== RESTAURANTS =====
+async function loadRest() {
+  document.getElementById('restTbody').innerHTML = '<tr class="loading-row"><td colspan="6"><span class="spinner"></span>Inapakia...</td></tr>';
+  const { data, error } = await db.from('restaurants').select('*').order('created_at',{ascending:false});
+  if (error) { showToast('Hitilafu: '+error.message,'error'); return; }
+  if (!data || data.length === 0) {
+    document.getElementById('restTbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted2);padding:32px">Hakuna migahawa bado</td></tr>';
+    return;
+  }
+  document.getElementById('restTbody').innerHTML = data.map(r => `
+    <tr>
+      <td><b>${r.name}</b></td><td>${r.city}</td><td>${r.food_type||'—'}</td><td>${r.phone||'—'}</td>
+      <td><span class="badge ${r.status==='active'?'badge-green':'badge-red'}">${r.status==='active'?'Hai':'Imezimwa'}</span></td>
+      <td><button class="btn-del" onclick="deleteRest('${r.id}')">🗑️ Futa</button></td>
+    </tr>`).join('');
+}
+
+function openRestModal() {
+  document.getElementById('modalBox').innerHTML = `
+    <div class="modal-head"><div class="modal-head-title">🍽️ Ongeza Mgahawa</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Jina *</label><input class="form-input" id="f-rname" placeholder="mf. Mama Paka Mgahawa"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Mji *</label><select class="form-select" id="f-rcity"><option>Dar es Salaam</option><option>Mwanza</option><option>Arusha</option><option>Dodoma</option><option>Kigoma</option><option>Mtwara</option></select></div>
+        <div class="form-group"><label class="form-label">Aina ya Chakula</label><input class="form-input" id="f-rtype" placeholder="mf. Fast Food"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Simu</label><input class="form-input" id="f-rphone" placeholder="07xx xxx xxx"></div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-secondary" onclick="closeModal()">Ghairi</button>
+      <button class="btn-primary" onclick="saveRest()">💾 Hifadhi</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+async function saveRest() {
+  const name = document.getElementById('f-rname').value.trim();
+  const city = document.getElementById('f-rcity').value;
+  const food_type = document.getElementById('f-rtype').value.trim();
+  const phone = document.getElementById('f-rphone').value.trim();
+  if (!name) { showToast('Jaza jina la mgahawa','error'); return; }
+  const { error } = await db.from('restaurants').insert([{name,city,food_type,phone,status:'active'}]);
+  if (error) { showToast('Hitilafu: '+error.message,'error'); return; }
+  showToast(`Mgahawa "${name}" umehifadhiwa ✅`,'success');
+  closeModal(); loadRest();
+}
+
+async function deleteRest(id) {
+  if (!confirm('Una uhakika?')) return;
+  await db.from('restaurants').delete().eq('id',id);
+  showToast('Mgahawa umefutwa','error'); loadRest();
+}
+
+// ===== ADS =====
+async function loadAds() {
+  const { data, error } = await db.from('ads').select('*').order('created_at',{ascending:false});
+  const grid = document.getElementById('adsGrid');
+  if (!data || data.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📢</div>Hakuna matangazo bado. Ongeza la kwanza!</div>';
+    return;
+  }
+  grid.innerHTML = data.map(a => `
+    <div class="ad-card">
+      <div class="ad-banner" style="background:${a.color||'#1a6b3a'};color:white">${a.company_name.substring(0,8).toUpperCase()}</div>
+      <div class="ad-info">
+        <div style="font-weight:700">${a.company_name}</div>
+        <div style="font-size:0.78rem;color:var(--muted2);margin:4px 0">${a.start_date||''} – ${a.end_date||''}</div>
+        <div class="ad-footer">
+          <span class="badge ${a.status==='active'?'badge-green':'badge-red'}">${a.status==='active'?'Inaendesha':'Imesimama'}</span>
+          <button class="btn-del" onclick="deleteAd('${a.id}')">🗑️</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openAdModal() {
+  document.getElementById('modalBox').innerHTML = `
+    <div class="modal-head"><div class="modal-head-title">📢 Ongeza Tangazo</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Jina la Kampuni *</label><input class="form-input" id="f-adname" placeholder="mf. NMB Bank"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tarehe ya Kuanza</label><input class="form-input" id="f-adstart" type="date"></div>
+        <div class="form-group"><label class="form-label">Tarehe ya Kuisha</label><input class="form-input" id="f-adend" type="date"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Rangi</label><input class="form-input" id="f-adcolor" type="color" value="#006FBA" style="height:44px;padding:4px 8px"></div>
+      <div class="form-group"><label class="form-label">Kiasi cha Malipo (TZS)</label><input class="form-input" id="f-adamt" type="number" placeholder="500000"></div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-secondary" onclick="closeModal()">Ghairi</button>
+      <button class="btn-primary" onclick="saveAd()">💾 Hifadhi</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+async function saveAd() {
+  const company_name = document.getElementById('f-adname').value.trim();
+  if (!company_name) { showToast('Jaza jina la kampuni','error'); return; }
+  const color = document.getElementById('f-adcolor').value;
+  const start_date = document.getElementById('f-adstart').value;
+  const end_date = document.getElementById('f-adend').value;
+  const amount = parseInt(document.getElementById('f-adamt').value)||0;
+  const { error } = await db.from('ads').insert([{company_name,color,start_date,end_date,amount,status:'active'}]);
+  if (error) { showToast('Hitilafu: '+error.message,'error'); return; }
+  showToast(`Tangazo la "${company_name}" limeongezwa ✅`,'success');
+  closeModal(); loadAds();
+}
+
+async function deleteAd(id) {
+  if (!confirm('Una uhakika?')) return;
+  await db.from('ads').delete().eq('id',id);
+  showToast('Tangazo limefutwa','error'); loadAds();
+}
+
+// ===== MODAL =====
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+document.getElementById('modalOverlay').addEventListener('click', e => { if(e.target===document.getElementById('modalOverlay')) closeModal(); });
+
+// ===== TOAST =====
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show '+type;
+  setTimeout(() => t.className='toast', 3500);
+}
+</script>
+</body>
+</html>

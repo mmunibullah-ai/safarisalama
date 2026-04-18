@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafariSalama — Jikute Mwenyeji Kila Mji</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a6b3a;
+    --green-light: #2d9b56;
+    --gold: #e8a020;
+    --gold-light: #f5c048;
+    --cream: #faf7f0;
+    --dark: #0f1f15;
+    --text: #2a2a2a;
+    --muted: #7a8a80;
+    --card-bg: #ffffff;
+    --border: #e2ece6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(250,247,240,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--green);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 8px; align-items: center; }
+  .nav-links a {
+    text-decoration: none; color: var(--muted); font-size: 0.88rem;
+    font-weight: 500; padding: 6px 14px; border-radius: 20px;
+    transition: all 0.2s;
+  }
+  .nav-links a:hover { color: var(--green); background: rgba(26,107,58,0.07); }
+  .btn-nav {
+    background: var(--green); color: white !important;
+    border-radius: 20px !important; font-weight: 600 !important;
+  }
+  .btn-nav:hover { background: var(--green-light); color: white !important; }
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(26,107,58,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(232,160,32,0.1) 0%, transparent 50%),
+      var(--cream);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 80px 24px 40px;
+    text-align: center;
+    position: relative;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(26,107,58,0.1); border: 1px solid rgba(26,107,58,0.2);
+    color: var(--green); font-size: 0.8rem; font-weight: 600;
+    padding: 6px 14px; border-radius: 20px; margin-bottom: 24px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-badge::before { content: "🌍"; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    color: var(--dark);
+    max-width: 780px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+  h1 em { color: var(--green); font-style: normal; }
+  h1 strong { color: var(--gold); }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  /* ===== SEARCH BOX ===== */
+  .search-box {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 8px 8px 8px 20px;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+    width: 100%; max-width: 620px;
+    animation: fadeUp 0.7s 0.3s ease both;
+    flex-wrap: wrap;
+  }
+  .search-box input {
+    border: none; outline: none; font-size: 1rem;
+    font-family: 'DM Sans', sans-serif;
+    flex: 1; min-width: 160px; background: transparent;
+    color: var(--text);
+  }
+  .search-box input::placeholder { color: #aab5af; }
+  .search-divider { width: 1px; height: 30px; background: var(--border); }
+  .search-date {
+    border: none; outline: none; font-size: 0.9rem;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--muted); background: transparent; cursor: pointer;
+  }
+  .btn-search {
+    background: var(--green);
+    color: white; border: none; cursor: pointer;
+    padding: 12px 24px; border-radius: 14px;
+    font-size: 0.95rem; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-search:hover { background: var(--green-light); transform: translateY(-1px); }
+
+  .popular-cities {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    margin-top: 20px;
+    animation: fadeUp 0.7s 0.4s ease both;
+  }
+  .city-pill {
+    background: white; border: 1px solid var(--border);
+    color: var(--text); font-size: 0.82rem; font-weight: 500;
+    padding: 6px 14px; border-radius: 20px; cursor: pointer;
+    transition: all 0.2s; display: flex; align-items: center; gap: 5px;
+  }
+  .city-pill:hover { border-color: var(--green); color: var(--green); background: rgba(26,107,58,0.04); }
+
+  /* ===== STATS ===== */
+  .stats-bar {
+    display: flex; gap: 40px; justify-content: center;
+    margin-top: 60px; flex-wrap: wrap;
+    animation: fadeUp 0.7s 0.5s ease both;
+  }
+  .stat { text-align: center; }
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 900;
+    color: var(--green);
+  }
+  .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+  /* ===== SECTION ===== */
+  section { padding: 80px 24px; max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    color: var(--dark); line-height: 1.2;
+    margin-bottom: 40px;
+  }
+
+  /* ===== LODGE CARDS ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+  .lodge-card {
+    background: white; border-radius: 20px;
+    overflow: hidden; border: 1px solid var(--border);
+    transition: all 0.25s; cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .lodge-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.1); }
+
+  .card-img {
+    width: 100%; height: 200px; object-fit: cover;
+    background: linear-gradient(135deg, #d4edda, #a8d5b5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem; position: relative;
+    overflow: hidden;
+  }
+  .card-img-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+  }
+  .card-badge {
+    position: absolute; top: 12px; left: 12px;
+    background: white; color: var(--green);
+    font-size: 0.72rem; font-weight: 700;
+    padding: 4px 10px; border-radius: 10px;
+  }
+  .card-fav {
+    position: absolute; top: 12px; right: 12px;
+    background: white; width: 32px; height: 32px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .card-body { padding: 18px 20px 20px; }
+  .card-location { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+  .card-name { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+  .card-amenities { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .amenity {
+    background: rgba(26,107,58,0.07); color: var(--green);
+    font-size: 0.72rem; font-weight: 600;
+    padding: 3px 9px; border-radius: 8px;
+  }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; }
+  .card-price { }
+  .price-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; font-weight: 700; color: var(--green);
+  }
+  .price-unit { font-size: 0.78rem; color: var(--muted); }
+  .card-rating { display: flex; align-items: center; gap: 4px; }
+  .stars { color: var(--gold); font-size: 0.85rem; }
+  .rating-count { font-size: 0.78rem; color: var(--muted); }
+  .btn-book {
+    background: var(--green); color: white;
+    border: none; cursor: pointer;
+    padding: 9px 18px; border-radius: 12px;
+    font-size: 0.85rem; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-book:hover { background: var(--green-light); }
+
+  /* ===== SERVICES SECTION ===== */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+  }
+  .service-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 18px; padding: 24px 20px;
+    transition: all 0.2s; cursor: pointer;
+  }
+  .service-card:hover { border-color: var(--green); transform: translateY(-2px); }
+  .service-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; margin-bottom: 14px;
+  }
+  .si-boda { background: rgba(232,160,32,0.12); }
+  .si-food { background: rgba(26,107,58,0.1); }
+  .si-wash { background: rgba(59,130,246,0.1); }
+  .si-fundi { background: rgba(239,68,68,0.1); }
+  .service-name { font-weight: 700; font-size: 1rem; color: var(--dark); margin-bottom: 4px; }
+  .service-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+  .service-count { font-size: 0.78rem; color: var(--green); font-weight: 600; margin-top: 10px; }
+
+  /* ===== HOW IT WORKS ===== */
+  .how-bg {
+    background: var(--dark);
+    padding: 80px 24px;
+    position: relative; overflow: hidden;
+  }
+  .how-bg::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(26,107,58,0.3) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 30%, rgba(232,160,32,0.15) 0%, transparent 50%);
+  }
+  .how-inner { max-width: 1100px; margin: 0 auto; position: relative; }
+  .how-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    color: white; text-align: center; margin-bottom: 12px;
+  }
+  .how-sub { text-align: center; color: rgba(255,255,255,0.5); margin-bottom: 56px; font-size: 0.95rem; }
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 32px;
+  }
+  .step {
+    text-align: center;
+  }
+  .step-num {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: rgba(26,107,58,0.3); border: 1px solid rgba(45,155,86,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 1.3rem;
+    font-weight: 700; color: var(--green-light);
+    margin: 0 auto 16px;
+  }
+  .step-title { font-weight: 700; color: white; margin-bottom: 8px; font-size: 1rem; }
+  .step-desc { font-size: 0.83rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+  .modal {
+    background: white; border-radius: 24px;
+    width: 100%; max-width: 560px;
+    max-height: 90vh; overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.25s;
+  }
+  .modal-overlay.active .modal { transform: translateY(0); }
+  .modal-header {
+    padding: 24px 24px 0;
+    display: flex; align-items: start; justify-content: space-between;
+  }
+  .modal-img {
+    width: 100%; height: 220px;
+    background: linear-gradient(135deg, #d4edda 0%, #a8d5b5 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 4rem; border-radius: 16px; margin-bottom: 20px;
+  }
+  .modal-body { padding: 0 24px 24px; }
+  .modal-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; color: var(--dark); margin-bottom: 6px;
+  }
+  .modal-location { color: var(--muted); font-size: 0.9rem; margin-bottom: 16px; }
+  .modal-section-title { font-weight: 700; font-size: 0.9rem; color: var(--dark); margin: 20px 0 10px; }
+  .boda-list { display: flex; flex-direction: column; gap: 10px; }
+  .boda-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--cream); border-radius: 12px; padding: 12px 16px;
+  }
+  .boda-name { font-weight: 600; font-size: 0.9rem; }
+  .boda-phone { font-size: 0.82rem; color: var(--muted); }
+  .btn-call {
+    background: rgba(26,107,58,0.1); color: var(--green);
+    border: none; cursor: pointer;
+    padding: 6px 14px; border-radius: 8px;
+    font-size: 0.8rem; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .close-btn {
+    background: rgba(0,0,0,0.07); border: none; cursor: pointer;
+    width: 36px; height: 36px; border-radius: 50%;
+    font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .close-btn:hover { background: rgba(0,0,0,0.14); }
+  .btn-book-full {
+    background: var(--green); color: white;
+    border: none; cursor: pointer;
+    padding: 14px; border-radius: 14px;
+    font-size: 1rem; font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    width: 100%; margin-top: 24px;
+    transition: all 0.2s;
+  }
+  .btn-book-full:hover { background: var(--green-light); transform: translateY(-1px); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--dark); color: rgba(255,255,255,0.5);
+    text-align: center; padding: 40px 24px;
+    font-size: 0.85rem;
+  }
+  footer strong { color: white; }
+
+  /* ===== BOTTOM NAV (mobile) ===== */
+  .bottom-nav {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 99;
+    background: white; border-top: 1px solid var(--border);
+    padding: 10px 0 14px;
+    justify-content: space-around;
+  }
+  .bnav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 0.7rem; color: var(--muted); cursor: pointer;
+    transition: color 0.2s;
+  }
+  .bnav-item.active { color: var(--green); }
+  .bnav-icon { font-size: 1.3rem; }
+
+  @media (max-width: 600px) {
+    .bottom-nav { display: flex; }
+    body { padding-bottom: 70px; }
+    .nav-links { display: none; }
+    .search-box { border-radius: 16px; }
+    .stats-bar { gap: 24px; }
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* toast */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--dark); color: white;
+    padding: 12px 24px; border-radius: 30px;
+    font-size: 0.88rem; font-weight: 500;
+    opacity: 0; transition: all 0.3s; z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* filter bar */
+  .filter-bar {
+    display: flex; gap: 8px; overflow-x: auto;
+    padding-bottom: 4px; margin-bottom: 28px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    background: white; border: 1.5px solid var(--border);
+    color: var(--muted); font-size: 0.82rem; font-weight: 500;
+    padding: 7px 16px; border-radius: 20px; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    border-color: var(--green); color: var(--green);
+    background: rgba(26,107,58,0.06);
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">🌿 Safari<span>Salama</span></div>
+  <div class="nav-links">
+    <a href="#lodges">Lodges</a>
+    <a href="#services">Huduma</a>
+    <a href="#how">Jinsi Inavyofanya Kazi</a>
+    <a href="#" class="btn-nav">Ingia / Jisajili</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Tanzania yote kifingoni mwako</div>
+  <h1>Jikute <em>Mwenyeji</em><br>Kwenye Kila <strong>Mji</strong></h1>
+  <p class="hero-sub">Pata lodge nzuri, bodaboda muaminifu, na chakula kitamu — popote unapofika Tanzania, hata kwa mara ya kwanza.</p>
+
+  <div class="search-box">
+    <span>📍</span>
+    <input type="text" placeholder="Unatafuta lodge katika mji gani? (mf. Kigoma, Mtwara...)" id="searchInput">
+    <div class="search-divider"></div>
+    <input type="date" class="search-date" id="checkIn">
+    <button class="btn-search" onclick="doSearch()">🔍 Tafuta</button>
+  </div>
+
+  <div class="popular-cities">
+    <span style="font-size:0.8rem;color:var(--muted);margin-right:4px;">Miji maarufu:</span>
+    <div class="city-pill" onclick="setCity('Dar es Salaam')">🏙️ Dar es Salaam</div>
+    <div class="city-pill" onclick="setCity('Mwanza')">🌊 Mwanza</div>
+    <div class="city-pill" onclick="setCity('Arusha')">⛰️ Arusha</div>
+    <div class="city-pill" onclick="setCity('Dodoma')">🏛️ Dodoma</div>
+    <div class="city-pill" onclick="setCity('Kigoma')">⛵ Kigoma</div>
+    <div class="city-pill" onclick="setCity('Mtwara')">🌴 Mtwara</div>
+    <div class="city-pill" onclick="setCity('Morogoro')">🌿 Morogoro</div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-number">1,240+</div><div class="stat-label">Lodges Zilizosajiliwa</div></div>
+    <div class="stat"><div class="stat-number">127</div><div class="stat-label">Miji Tanzania</div></div>
+    <div class="stat"><div class="stat-number">4.7★</div><div class="stat-label">Rating ya Wastani</div></div>
+    <div class="stat"><div class="stat-number">32K+</div><div class="stat-label">Wasafiri Waliofaidika</div></div>
+  </div>
+</div>
+
+<!-- LODGES SECTION -->
+<section id="lodges">
+  <div class="section-label">🏨 Lodges na Hotels</div>
+  <h2 class="section-title">Lodges Zinazopendelewa<br>na Wasafiri</h2>
+
+  <div class="filter-bar">
+    <button class="filter-btn active">Zote</button>
+    <button class="filter-btn">Chini ya 30,000 TZS</button>
+    <button class="filter-btn">30K – 60K TZS</button>
+    <button class="filter-btn">60K+ TZS</button>
+    <button class="filter-btn">WiFi</button>
+    <button class="filter-btn">Chakula</button>
+    <button class="filter-btn">Parking</button>
+    <button class="filter-btn">Salama Sana</button>
+  </div>
+
+  <div class="cards-grid" id="lodgesGrid">
+    <!-- Cards injected by JS -->
+  </div>
+</section>
+
+<!-- SERVICES SECTION -->
+<section id="services" style="background: linear-gradient(to bottom, var(--cream), white); border-radius: 32px;">
+  <div class="section-label">⚡ Huduma za Nyongeza</div>
+  <h2 class="section-title">Kila Kitu Unachohitaji<br>Mahali Pamoja</h2>
+  <div class="services-grid">
+    <div class="service-card" onclick="showToast('Bodaboda 5 wanapatikana karibu na lodge uliyochagua')">
+      <div class="service-icon si-boda">🛵</div>
+      <div class="service-name">Bodaboda Muaminifu</div>
+      <div class="service-desc">Namba za bodaboda wanaopaki karibu na lodge yako. Bei ya wastani imeonyeshwa.</div>
+      <div class="service-count">↗ Wastani wa bodaboda 5 kwa kila lodge</div>
+    </div>
+    <div class="service-card" onclick="showToast('Migahawa ya karibu inaonekana kwenye app')">
+      <div class="service-icon si-food">🍽️</div>
+      <div class="service-name">Migahawa ya Karibu</div>
+      <div class="service-desc">Orodha ya migahawa inayomzunguka lodge yako, na menu na bei.</div>
+      <div class="service-count">↗ Rated na wasafiri wengine</div>
+    </div>
+    <div class="service-card" onclick="showToast('Huduma ya kufua inapatikana')">
+      <div class="service-icon si-wash">👕</div>
+      <div class="service-name">Dry Cleaner / Kufua</div>
+      <div class="service-desc">Tafuta huduma ya kufua nguo karibu nawe. Mzigo mzito? Tunakusaidia.</div>
+      <div class="service-count">↗ Huduma inayokuja moja kwa moja</div>
+    </div>
+    <div class="service-card" onclick="showToast('Fundi anapatikana. Bonyeza kutuma ombi')">
+      <div class="service-icon si-fundi">🔧</div>
+      <div class="service-name">Mafundi wa Mitaa</div>
+      <div class="service-desc">Fundi wa bomba, rangi, dishi, umeme — wote wanapatikana mkoani mwako.</div>
+      <div class="service-count">↗ Inakuja — Awamu ya 2</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<div class="how-bg" id="how">
+  <div class="how-inner">
+    <div class="section-label" style="text-align:center;color:var(--gold)">📱 Jinsi Inavyofanya Kazi</div>
+    <h2 class="how-title">Rahisi. Haraka. Salama.</h2>
+    <p class="how-sub">Hatua 4 tu — na unalala salama usiku huo</p>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Ingiza Mji Unaokwenda</div>
+        <div class="step-desc">Andika jina la mji unakokwenda na tarehe utakayofika.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Chagua Lodge Inayokufaa</div>
+        <div class="step-desc">Angalia picha, bei, na ukaguzi wa wasafiri wengine. Chagua kadri ya bajeti yako.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Fanya Booking</div>
+        <div class="step-desc">Lipia kwa M-Pesa, Tigopesa au njia nyingine. Pokea uthibitisho mara moja.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-title">Fika & Starehe</div>
+        <div class="step-desc">Toa namba yako ya booking, ingia lodgeni, na upumzike. Huduma za karibu ziko tayari.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div style="font-family:'Playfair Display',serif;font-size:1.3rem;color:white;margin-bottom:10px;">🌿 SafariSalama</div>
+  <p>Ndoto ya <strong>Mtanzania</strong> kwa <strong>Watanzania</strong> wanaosafiri nchi yao.</p>
+  <p style="margin-top:8px;font-size:0.75rem;">Prototype — Awamu ya 1 · 2025</p>
+</footer>
+
+<!-- BOTTOM NAV (mobile) -->
+<div class="bottom-nav">
+  <div class="bnav-item active"><div class="bnav-icon">🏠</div>Nyumbani</div>
+  <div class="bnav-item"><div class="bnav-icon">🔍</div>Tafuta</div>
+  <div class="bnav-item"><div class="bnav-icon">🏨</div>Lodges</div>
+  <div class="bnav-item"><div class="bnav-icon">⚡</div>Huduma</div>
+  <div class="bnav-item"><div class="bnav-icon">👤</div>Akaunti</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const lodges = [
+  {
+    name: "Kigoma Sunset Lodge",
+    city: "Kigoma",
+    location: "Karibu na Bandari ya Kigoma",
+    price: 25000,
+    rating: 4.8,
+    reviews: 132,
+    emoji: "🌅",
+    badge: "Inayopendelewa",
+    amenities: ["WiFi", "Maji Moto", "Parking", "Chakula"],
+    desc: "Lodge tulivu karibu na ziwa Tanganyika. Salama, safi, na wenyeji wakarimu.",
+    boda: [
+      { name: "Juma Ally", phone: "0756 xxx xxx", rating: "⭐4.9" },
+      { name: "Mohamed Hassan", phone: "0685 xxx xxx", rating: "⭐4.7" },
+      { name: "Rashid Omari", phone: "0712 xxx xxx", rating: "⭐4.8" },
+    ]
+  },
+  {
+    name: "Mtwara Comfort Inn",
+    city: "Mtwara",
+    location: "Karibu na Soko Kuu, Mtwara",
+    price: 20000,
+    rating: 4.6,
+    reviews: 87,
+    emoji: "🌴",
+    badge: "Bei Nzuri",
+    amenities: ["WiFi", "AC", "Ulinzi 24hr"],
+    desc: "Nafuu na salama. Umbali mfupi kutoka kituo cha usafiri. Rating nzuri kwa wasafiri.",
+    boda: [
+      { name: "Ali Kapinga", phone: "0756 xxx xxx", rating: "⭐4.6" },
+      { name: "Hamisi Mwenda", phone: "0685 xxx xxx", rating: "⭐4.5" },
+    ]
+  },
+  {
+    name: "Dodoma Central Lodge",
+    city: "Dodoma",
+    location: "Karibu na Bunge, Dodoma",
+    price: 35000,
+    rating: 4.5,
+    reviews: 214,
+    emoji: "🏛️",
+    badge: "Imekaguliwa",
+    amenities: ["WiFi", "Maji Moto", "Chakula", "AC"],
+    desc: "Ipo katikati ya mji mkuu. Salama, safi, na karibu na sehemu zote za biashara.",
+    boda: [
+      { name: "Paulo Msaki", phone: "0756 xxx xxx", rating: "⭐4.9" },
+      { name: "Frank Mbogo", phone: "0685 xxx xxx", rating: "⭐4.7" },
+      { name: "James Swai", phone: "0712 xxx xxx", rating: "⭐4.8" },
+      { name: "Grace Mushi", phone: "0767 xxx xxx", rating: "⭐4.6" },
+    ]
+  },
+  {
+    name: "Morogoro Green Stay",
+    city: "Morogoro",
+    location: "Chini ya Milima ya Uluguru",
+    price: 18000,
+    rating: 4.7,
+    reviews: 98,
+    emoji: "🌿",
+    badge: "Mpya",
+    amenities: ["WiFi", "Bustani", "Chakula"],
+    desc: "Mazingira mazuri sana. Hewa safi. Chakula cha nyumbani. Wenyeji wa kupendeza.",
+    boda: [
+      { name: "Samwel Chama", phone: "0756 xxx xxx", rating: "⭐4.8" },
+      { name: "Deo Lukwaro", phone: "0685 xxx xxx", rating: "⭐4.6" },
+    ]
+  },
+  {
+    name: "Mwanza Lake View",
+    city: "Mwanza",
+    location: "Karibu na Ziwa Victoria, Mwanza",
+    price: 45000,
+    rating: 4.9,
+    reviews: 305,
+    emoji: "🌊",
+    badge: "Bora Zaidi",
+    amenities: ["WiFi", "Maji Moto", "AC", "Parking", "Chakula"],
+    desc: "Moja ya lodges bora Mwanza. Mtazamo wa ziwa Victoria. Huduma ya hali ya juu.",
+    boda: [
+      { name: "Amos Mwita", phone: "0756 xxx xxx", rating: "⭐5.0" },
+      { name: "Victor Magesa", phone: "0685 xxx xxx", rating: "⭐4.9" },
+      { name: "Peter Chacha", phone: "0712 xxx xxx", rating: "⭐4.7" },
+    ]
+  },
+  {
+    name: "Arusha Gateway Lodge",
+    city: "Arusha",
+    location: "Karibu na Kituo cha Mabasi, Arusha",
+    price: 30000,
+    rating: 4.6,
+    reviews: 175,
+    emoji: "⛰️",
+    badge: "Imekaguliwa",
+    amenities: ["WiFi", "Ulinzi 24hr", "Parking", "Maji Moto"],
+    desc: "Karibu na mabasi yote makubwa. Salama, safi. Rahisi kutoka/kwenda safari.",
+    boda: [
+      { name: "Simon Lema", phone: "0756 xxx xxx", rating: "⭐4.7" },
+      { name: "Lazaro Mollel", phone: "0685 xxx xxx", rating: "⭐4.8" },
+      { name: "Wilson Nasha", phone: "0712 xxx xxx", rating: "⭐4.6" },
+    ]
+  }
+];
+
+function renderCards(data) {
+  const grid = document.getElementById('lodgesGrid');
+  grid.innerHTML = data.map((l, i) => `
+    <div class="lodge-card" onclick="openModal(${i})">
+      <div class="card-img">
+        <div style="font-size:3.5rem">${l.emoji}</div>
+        <div class="card-badge">${l.badge}</div>
+        <div class="card-fav">🤍</div>
+      </div>
+      <div class="card-body">
+        <div class="card-location">📍 ${l.location}</div>
+        <div class="card-name">${l.name}</div>
+        <div class="card-amenities">
+          ${l.amenities.map(a => `<span class="amenity">${a}</span>`).join('')}
+        </div>
+        <div class="card-footer">
+          <div>
+            <div class="card-price">
+              <span class="price-amount">TZS ${l.price.toLocaleString()}</span>
+              <span class="price-unit">/usiku</span>
+            </div>
+            <div class="card-rating">
+              <span class="stars">★★★★★</span>
+              <span class="rating-count">${l.rating} (${l.reviews})</span>
+            </div>
+          </div>
+          <button class="btn-book">Angalia</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+renderCards(lodges);
+
+function openModal(i) {
+  const l = lodges[i];
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-header">
+      <div></div>
+      <button class="close-btn" onclick="closeModalBtn()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-img">${l.emoji}</div>
+      <div class="modal-name">${l.name}</div>
+      <div class="modal-location">📍 ${l.location} &nbsp;·&nbsp; ★ ${l.rating} (${l.reviews} maoni)</div>
+      <div class="card-amenities" style="margin-bottom:0">
+        ${l.amenities.map(a => `<span class="amenity">${a}</span>`).join('')}
+      </div>
+      <p style="font-size:0.9rem;color:var(--muted);margin-top:14px;line-height:1.6">${l.desc}</p>
+
+      <div style="background:var(--cream);border-radius:14px;padding:16px;margin-top:16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:0.78rem;color:var(--muted)">Bei kwa usiku</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--green);font-weight:700">TZS ${l.price.toLocaleString()}</div>
+        </div>
+        <div style="font-size:0.82rem;color:var(--muted);text-align:right">
+          <div>✅ Lipia kwa M-Pesa</div>
+          <div>✅ Lipia kwa Tigopesa</div>
+        </div>
+      </div>
+
+      <div class="modal-section-title">🛵 Bodaboda Karibu na Lodge Hii</div>
+      <div class="boda-list">
+        ${l.boda.map(b => `
+          <div class="boda-item">
+            <div>
+              <div class="boda-name">${b.name}</div>
+              <div class="boda-phone">${b.phone} &nbsp; ${b.rating}</div>
+            </div>
+            <button class="btn-call" onclick="showToast('Unawasiliana na ${b.name}...')">📞 Piga Simu</button>
+          </div>
+        `).join('')}
+      </div>
+
+      <button class="btn-book-full" onclick="showToast('Booking iliyofanikiwa! ✅ Uthibitisho umetumwa kwa SMS');closeModalBtn()">
+        ✅ Fanya Booking Sasa
+      </button>
+    </div>
+  `;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalBtn();
+}
+function closeModalBtn() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function setCity(city) {
+  document.getElementById('searchInput').value = city;
+}
+
+function doSearch() {
+  const val = document.getElementById('searchInput').value.trim();
+  if (!val) { showToast('Tafadhali ingiza jina la mji'); return; }
+  const found = lodges.filter(l => l.city.toLowerCase().includes(val.toLowerCase()) || l.location.toLowerCase().includes(val.toLowerCase()));
+  if (found.length === 0) {
+    showToast(`Hakuna lodge zilizopatikana kwa "${val}" bado`);
+  } else {
+    renderCards(found);
+    document.getElementById('lodges').scrollIntoView({ behavior: 'smooth' });
+    showToast(`Lodges ${found.length} zimepatikana kwa ${val} ✅`);
+  }
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+// filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    if (this.textContent === 'Zote') { renderCards(lodges); return; }
+    if (this.textContent === 'Chini ya 30,000 TZS') { renderCards(lodges.filter(l => l.price < 30000)); return; }
+    if (this.textContent === '30K – 60K TZS') { renderCards(lodges.filter(l => l.price >= 30000 && l.price <= 60000)); return; }
+    if (this.textContent === '60K+ TZS') { renderCards(lodges.filter(l => l.price > 60000)); return; }
+    const keyword = this.textContent;
+    renderCards(lodges.filter(l => l.amenities.some(a => a.toLowerCase().includes(keyword.toLowerCase()))));
+  });
+});
+
+// bottom nav
+document.querySelectorAll('.bnav-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

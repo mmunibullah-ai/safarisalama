@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafariSalama — Sajili Lodge Yako Bure</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #1a6b3a;
+  --green-light: #2d9b56;
+  --green-pale: #f0faf4;
+  --gold: #e8a020;
+  --gold-light: #fdf3e0;
+  --cream: #faf8f3;
+  --dark: #0f1f15;
+  --text: #1e2a22;
+  --muted: #6b7e72;
+  --border: #ddeae2;
+  --white: #ffffff;
+  --red: #dc2626;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ===== TOPBAR ===== */
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem; color: var(--green);
+}
+.logo span { color: var(--gold); }
+.topbar-link {
+  font-size: 0.82rem; color: var(--muted);
+  text-decoration: none; font-weight: 500;
+}
+.topbar-link:hover { color: var(--green); }
+
+/* ===== HERO ===== */
+.hero {
+  background: var(--dark);
+  position: relative; overflow: hidden;
+  padding: 64px 24px 56px;
+  text-align: center;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 60%, rgba(26,107,58,0.5) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 20%, rgba(232,160,32,0.2) 0%, transparent 50%);
+}
+.hero-inner { position: relative; max-width: 700px; margin: 0 auto; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(45,155,86,0.2); border: 1px solid rgba(45,155,86,0.35);
+  color: #6ee8a0; font-size: 0.78rem; font-weight: 600;
+  padding: 6px 14px; border-radius: 20px; margin-bottom: 20px;
+  letter-spacing: 0.03em;
+  animation: fadeUp 0.5s ease both;
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  color: white; line-height: 1.15;
+  margin-bottom: 16px;
+  animation: fadeUp 0.5s 0.1s ease both;
+}
+.hero h1 em { color: #6ee8a0; font-style: normal; }
+.hero h1 strong { color: var(--gold); }
+.hero-sub {
+  font-size: 1rem; color: rgba(255,255,255,0.6);
+  line-height: 1.7; max-width: 540px; margin: 0 auto 32px;
+  animation: fadeUp 0.5s 0.2s ease both;
+}
+
+/* benefits row */
+.benefits-row {
+  display: flex; justify-content: center; gap: 10px;
+  flex-wrap: wrap;
+  animation: fadeUp 0.5s 0.3s ease both;
+}
+.benefit-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.8); font-size: 0.8rem;
+  padding: 7px 14px; border-radius: 20px;
+}
+.benefit-pill span { color: #6ee8a0; }
+
+/* ===== PROGRESS BAR ===== */
+.progress-wrap {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 20px 24px; position: sticky; top: 60px; z-index: 40;
+}
+.progress-inner { max-width: 640px; margin: 0 auto; }
+.steps-row {
+  display: flex; align-items: center; gap: 0;
+}
+.step-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  flex: 1; position: relative; cursor: pointer;
+}
+.step-circle {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700;
+  background: var(--border); color: var(--muted);
+  border: 2px solid var(--border);
+  transition: all 0.3s; position: relative; z-index: 2;
+}
+.step-circle.done { background: var(--green); border-color: var(--green); color: white; }
+.step-circle.active { background: var(--white); border-color: var(--green); color: var(--green); }
+.step-label { font-size: 0.68rem; font-weight: 600; color: var(--muted); text-align: center; white-space: nowrap; }
+.step-label.active { color: var(--green); }
+.step-label.done { color: var(--green-light); }
+.step-line {
+  height: 2px; flex: 1; margin-top: -18px;
+  background: var(--border); transition: background 0.4s;
+  position: relative; z-index: 1;
+}
+.step-line.done { background: var(--green); }
+
+/* ===== FORM AREA ===== */
+.form-area {
+  max-width: 640px; margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+.form-step { display: none; animation: fadeUp 0.35s ease both; }
+.form-step.active { display: block; }
+
+.step-heading {
+  margin-bottom: 28px;
+}
+.step-num-label {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--green);
+  margin-bottom: 6px;
+}
+.step-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem; color: var(--dark); line-height: 1.2;
+  margin-bottom: 6px;
+}
+.step-sub { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+
+/* form elements */
+.form-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 20px; padding: 24px;
+  margin-bottom: 16px;
+}
+.form-group { margin-bottom: 18px; }
+.form-group:last-child { margin-bottom: 0; }
+.form-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.82rem; font-weight: 600; color: var(--text);
+  margin-bottom: 7px;
+}
+.form-label .req { color: var(--red); }
+.form-input, .form-select, .form-textarea {
+  width: 100%; background: var(--cream);
+  border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+  font-size: 0.92rem; font-family: 'DM Sans', sans-serif;
+  color: var(--text); outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(26,107,58,0.08);
+  background: var(--white);
+}
+.form-input::placeholder, .form-textarea::placeholder { color: #b0bfb6; }
+.form-select option { background: white; }
+.form-textarea { resize: vertical; min-height: 90px; }
+.form-hint { font-size: 0.75rem; color: var(--muted); margin-top: 5px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* amenities checkboxes */
+.amenities-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px; margin-top: 4px;
+}
+.amenity-check {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--cream); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 10px 12px;
+  cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.amenity-check:hover { border-color: var(--green); background: var(--green-pale); }
+.amenity-check input { display: none; }
+.amenity-check.checked { border-color: var(--green); background: var(--green-pale); }
+.amenity-check.checked .ach-dot {
+  background: var(--green); border-color: var(--green);
+}
+.amenity-check.checked .ach-dot::after { opacity: 1; }
+.ach-dot {
+  width: 18px; height: 18px; border-radius: 5px;
+  border: 2px solid var(--border); background: white;
+  flex-shrink: 0; transition: all 0.2s; position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.ach-dot::after {
+  content: '✓'; color: white; font-size: 0.7rem; font-weight: 800;
+  opacity: 0; transition: opacity 0.15s;
+}
+.ach-label { font-size: 0.82rem; font-weight: 500; }
+
+/* photo upload */
+.photo-upload-area {
+  border: 2px dashed var(--border); border-radius: 14px;
+  padding: 28px 20px; text-align: center;
+  cursor: pointer; transition: all 0.2s;
+  background: var(--cream);
+}
+.photo-upload-area:hover { border-color: var(--green); background: var(--green-pale); }
+.photo-upload-area .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+.photo-upload-area .upload-text { font-size: 0.88rem; color: var(--muted); }
+.photo-upload-area .upload-text strong { color: var(--green); }
+.photo-previews {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;
+}
+.photo-preview {
+  width: 80px; height: 80px; border-radius: 10px;
+  background: var(--border); display: flex; align-items: center;
+  justify-content: center; font-size: 1.6rem; position: relative;
+  overflow: hidden; flex-shrink: 0;
+}
+.photo-del {
+  position: absolute; top: 3px; right: 3px;
+  background: rgba(0,0,0,0.6); color: white;
+  border: none; cursor: pointer; width: 20px; height: 20px;
+  border-radius: 50%; font-size: 0.65rem;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* payment plan cards */
+.plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.plan-card {
+  border: 2px solid var(--border); border-radius: 16px;
+  padding: 20px 18px; cursor: pointer; transition: all 0.25s;
+  position: relative; background: var(--white);
+}
+.plan-card:hover { border-color: var(--green); }
+.plan-card.selected { border-color: var(--green); background: var(--green-pale); }
+.plan-card.recommended::before {
+  content: 'Inayopendelewa';
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  background: var(--gold); color: white;
+  font-size: 0.68rem; font-weight: 700; padding: 3px 12px; border-radius: 10px;
+  white-space: nowrap;
+}
+.plan-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+.plan-price { font-size: 1.4rem; font-weight: 800; color: var(--green); margin-bottom: 8px; }
+.plan-price small { font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+.plan-perks { list-style: none; }
+.plan-perks li {
+  font-size: 0.78rem; color: var(--muted); padding: 3px 0;
+  display: flex; gap: 6px; align-items: flex-start;
+}
+.plan-perks li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+/* nav buttons */
+.form-nav {
+  display: flex; gap: 12px; justify-content: space-between;
+  margin-top: 28px;
+}
+.btn-back {
+  background: transparent; color: var(--muted);
+  border: 1.5px solid var(--border); cursor: pointer;
+  padding: 13px 24px; border-radius: 12px;
+  font-size: 0.92rem; font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+}
+.btn-back:hover { border-color: var(--muted); color: var(--text); }
+.btn-next {
+  background: var(--green); color: white;
+  border: none; cursor: pointer;
+  padding: 13px 32px; border-radius: 12px;
+  font-size: 0.95rem; font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+  flex: 1; justify-content: center;
+  box-shadow: 0 4px 16px rgba(26,107,58,0.25);
+}
+.btn-next:hover { background: var(--green-light); transform: translateY(-1px); }
+
+/* ===== SUCCESS SCREEN ===== */
+.success-screen {
+  display: none; text-align: center;
+  padding: 60px 24px;
+  max-width: 560px; margin: 0 auto;
+  animation: fadeUp 0.5s ease both;
+}
+.success-icon {
+  width: 88px; height: 88px; border-radius: 50%;
+  background: var(--green-pale); border: 3px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.8rem; margin: 0 auto 24px;
+  animation: popIn 0.5s 0.2s ease both;
+}
+.success-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; color: var(--dark); margin-bottom: 12px;
+}
+.success-sub {
+  font-size: 0.95rem; color: var(--muted); line-height: 1.7;
+  margin-bottom: 32px;
+}
+.success-steps {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px 24px;
+  text-align: left; margin-bottom: 24px;
+}
+.success-step {
+  display: flex; gap: 12px; padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.success-step:last-child { border-bottom: none; }
+.s-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--green-pale); color: var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+}
+.s-text { font-size: 0.85rem; color: var(--text); line-height: 1.5; }
+.s-text strong { color: var(--dark); }
+.btn-home {
+  background: var(--green); color: white;
+  border: none; cursor: pointer;
+  padding: 14px 32px; border-radius: 12px;
+  font-size: 0.95rem; font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.btn-home:hover { background: var(--green-light); }
+
+/* ===== SOCIAL PROOF ===== */
+.social-proof {
+  background: var(--white); border-top: 1px solid var(--border);
+  padding: 40px 24px;
+}
+.social-inner {
+  max-width: 640px; margin: 0 auto; text-align: center;
+}
+.sp-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem; color: var(--dark); margin-bottom: 24px;
+}
+.testimonials { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.testimonial {
+  background: var(--cream); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px;
+  text-align: left;
+}
+.test-text { font-size: 0.85rem; color: var(--text); line-height: 1.6; margin-bottom: 10px; font-style: italic; }
+.test-author { display: flex; align-items: center; gap: 8px; }
+.test-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--green-pale); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.test-name { font-size: 0.8rem; font-weight: 700; }
+.test-city { font-size: 0.72rem; color: var(--muted); }
+
+/* animations */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity:0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity:1; }
+}
+
+@media (max-width: 560px) {
+  .form-row-2 { grid-template-columns: 1fr; }
+  .plan-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 1.8rem; }
+  .amenities-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">🌿 Safari<span>Salama</span></div>
+  <a href="#" class="topbar-link">← Rudi kwenye App</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">🏨 Kwa Wamiliki wa Lodge & Hotel</div>
+    <h1>Weka Lodge Yako<br>Mbele ya <strong>Wasafiri</strong><br><em>50,000+ Tanzania</em></h1>
+    <p class="hero-sub">Jisajili bure leo. Wasafiri wataiona lodge yako, wafanye booking, na ukusanye pesa — hata ukiwa umelala.</p>
+    <div class="benefits-row">
+      <div class="benefit-pill"><span>✓</span> Bure kabisa kuanza</div>
+      <div class="benefit-pill"><span>✓</span> Usimamizi rahisi</div>
+      <div class="benefit-pill"><span>✓</span> Malipo ya M-Pesa</div>
+      <div class="benefit-pill"><span>✓</span> Msaada wa WhatsApp</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-inner">
+    <div class="steps-row">
+      <div class="step-item">
+        <div class="step-circle active" id="sc1">1</div>
+        <div class="step-label active" id="sl1">Taarifa</div>
+      </div>
+      <div class="step-line" id="line1"></div>
+      <div class="step-item">
+        <div class="step-circle" id="sc2">2</div>
+        <div class="step-label" id="sl2">Lodge</div>
+      </div>
+      <div class="step-line" id="line2"></div>
+      <div class="step-item">
+        <div class="step-circle" id="sc3">3</div>
+        <div class="step-label" id="sl3">Picha</div>
+      </div>
+      <div class="step-line" id="line3"></div>
+      <div class="step-item">
+        <div class="step-circle" id="sc4">4</div>
+        <div class="step-label" id="sl4">Mpango</div>
+      </div>
+      <div class="step-line" id="line4"></div>
+      <div class="step-item">
+        <div class="step-circle" id="sc5">5</div>
+        <div class="step-label" id="sl5">Thibitisha</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM AREA -->
+<div class="form-area" id="formArea">
+
+  <!-- STEP 1: Taarifa za Mmiliki -->
+  <div class="form-step active" id="step1">
+    <div class="step-heading">
+      <div class="step-num-label">Hatua 1 ya 5</div>
+      <div class="step-title">Taarifa Zako Binafsi</div>
+      <div class="step-sub">Tutumie hizi kukuwasiliana nawe na kukuthibitishia akaunti yako.</div>
+    </div>
+    <div class="form-card">
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Jina la Kwanza <span class="req">*</span></label>
+          <input class="form-input" id="fname" placeholder="mf. Juma">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jina la Familia <span class="req">*</span></label>
+          <input class="form-input" id="lname" placeholder="mf. Hassan">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Namba ya Simu <span class="req">*</span></label>
+        <input class="form-input" id="phone" type="tel" placeholder="07xx xxx xxx">
+        <div class="form-hint">📱 Tutakutumia SMS ya uthibitisho</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Barua Pepe (Si lazima)</label>
+        <input class="form-input" id="email" type="email" placeholder="juma@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nywila <span class="req">*</span></label>
+        <input class="form-input" id="password" type="password" placeholder="Angalau herufi 6">
+        <div class="form-hint">🔒 Utaitumia kuingia kwenye akaunti yako</div>
+      </div>
+    </div>
+    <div class="form-nav">
+      <button class="btn-next" onclick="nextStep(1)">Endelea → Taarifa za Lodge</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Taarifa za Lodge -->
+  <div class="form-step" id="step2">
+    <div class="step-heading">
+      <div class="step-num-label">Hatua 2 ya 5</div>
+      <div class="step-title">Taarifa za Lodge Yako</div>
+      <div class="step-sub">Taarifa hizi ndizo zitakazoonyeshwa kwa wasafiri wanaotafuta mahali pa kulala.</div>
+    </div>
+    <div class="form-card">
+      <div class="form-group">
+        <label class="form-label">Jina la Lodge / Hotel <span class="req">*</span></label>
+        <input class="form-input" id="lodgeName" placeholder="mf. Kigoma Sunset Lodge">
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Mji <span class="req">*</span></label>
+          <select class="form-select" id="lodgeCity">
+            <option value="">— Chagua Mji —</option>
+            <option>Dar es Salaam</option><option>Mwanza</option>
+            <option>Arusha</option><option>Dodoma</option>
+            <option>Kigoma</option><option>Mtwara</option>
+            <option>Morogoro</option><option>Tabora</option>
+            <option>Tanga</option><option>Mbeya</option>
+            <option>Zanzibar</option><option>Shinyanga</option>
+            <option>Mji Mwingine</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mtaa / Eneo <span class="req">*</span></label>
+          <input class="form-input" id="lodgeArea" placeholder="mf. Karibu na Bandari">
+        </div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Bei ya Chumba (TZS/Usiku) <span class="req">*</span></label>
+          <input class="form-input" id="lodgePrice" type="number" placeholder="25000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Idadi ya Vyumba</label>
+          <input class="form-input" id="lodgeRooms" type="number" placeholder="10">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Maelezo ya Lodge <span class="req">*</span></label>
+        <textarea class="form-textarea" id="lodgeDesc" placeholder="Elezea lodge yako — mahali ilipo, mazingira, huduma maalum, nini kinachofanya iwe tofauti..."></textarea>
+        <div class="form-hint">Maelezo mazuri yanasaidia wasafiri kuchagua lodge yako</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-group">
+        <label class="form-label">Huduma Zinazopatikana (Chagua zote zinazohusu)</label>
+        <div class="amenities-grid" id="amenitiesGrid">
+          <!-- injected by JS -->
+        </div>
+      </div>
+    </div>
+
+    <div class="form-nav">
+      <button class="btn-back" onclick="prevStep(2)">← Rudi</button>
+      <button class="btn-next" onclick="nextStep(2)">Endelea → Picha</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Picha -->
+  <div class="form-step" id="step3">
+    <div class="step-heading">
+      <div class="step-num-label">Hatua 3 ya 5</div>
+      <div class="step-title">Picha za Lodge Yako</div>
+      <div class="step-sub">Picha nzuri zinaongeza uwezekano wa kupata wasafiri mara 3. Pakia angalau picha 3.</div>
+    </div>
+    <div class="form-card">
+      <div class="photo-upload-area" onclick="triggerUpload()" id="uploadArea">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">
+          <strong>Bonyeza hapa kupakia picha</strong><br>
+          au buruta picha kutoka kompyuta yako<br>
+          <span style="font-size:0.75rem;color:#b0bfb6">PNG, JPG — Hadi MB 5 kwa picha</span>
+        </div>
+      </div>
+      <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="handlePhotos(this)">
+      <div class="photo-previews" id="photoPreviews"></div>
+      <div class="form-hint" style="margin-top:8px">💡 Picha zinazovutia zaidi: sebule, chumba cha kulala, bafu, mazingira ya nje</div>
+    </div>
+    <div class="form-nav">
+      <button class="btn-back" onclick="prevStep(3)">← Rudi</button>
+      <button class="btn-next" onclick="nextStep(3)">Endelea → Mpango</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Mpango wa Malipo -->
+  <div class="form-step" id="step4">
+    <div class="step-heading">
+      <div class="step-num-label">Hatua 4 ya 5</div>
+      <div class="step-title">Chagua Mpango Wako</div>
+      <div class="step-sub">Anza bure — hakuna malipo ya siri. Badilisha wakati wowote.</div>
+    </div>
+    <div class="form-card">
+      <div class="plan-grid">
+        <div class="plan-card selected" id="plan-free" onclick="selectPlan('free')">
+          <div class="plan-name">🌱 Bure</div>
+          <div class="plan-price">TZS 0 <small>/mwaka</small></div>
+          <ul class="plan-perks">
+            <li>Lodge moja kwenye app</li>
+            <li>Picha hadi 5</li>
+            <li>Bookings bila kikomo</li>
+            <li>Rating za wasafiri</li>
+          </ul>
+        </div>
+        <div class="plan-card recommended" id="plan-pro" onclick="selectPlan('pro')">
+          <div class="plan-name">⭐ Pro</div>
+          <div class="plan-price">TZS 50,000 <small>/mwaka</small></div>
+          <ul class="plan-perks">
+            <li>Lodge nyingi bila kikomo</li>
+            <li>Picha hadi 20</li>
+            <li>Inaonekana juu zaidi</li>
+            <li>Ripoti za kila wiki</li>
+            <li>Msaada wa haraka</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:14px;background:var(--gold-light);border-radius:12px;font-size:0.82rem;color:#7a4f00">
+        💛 <strong>Mwaka wa kwanza bure kabisa</strong> kwa wote wanaojisajili wiki hii. Huhitaji kadi ya benki.
+      </div>
+    </div>
+    <div class="form-nav">
+      <button class="btn-back" onclick="prevStep(4)">← Rudi</button>
+      <button class="btn-next" onclick="nextStep(4)">Endelea → Thibitisha</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: Thibitisha -->
+  <div class="form-step" id="step5">
+    <div class="step-heading">
+      <div class="step-num-label">Hatua 5 ya 5</div>
+      <div class="step-title">Thibitisha na Wasilisha</div>
+      <div class="step-sub">Angalia taarifa zako kabla ya kutuma. Unaweza kurudi kurekebishia.</div>
+    </div>
+
+    <div class="form-card" id="summaryCard">
+      <!-- filled by JS -->
+    </div>
+
+    <div class="form-card">
+      <div class="form-group">
+        <label class="form-label" style="align-items:flex-start;gap:10px">
+          <input type="checkbox" id="agreeTerms" style="margin-top:2px;accent-color:var(--green);width:16px;height:16px">
+          <span style="font-size:0.85rem;color:var(--muted);line-height:1.5">
+            Nakubali <strong style="color:var(--green)">Masharti ya Matumizi</strong> ya SafariSalama.
+            Ninathibitisha kuwa taarifa nilizotoa ni za kweli na lodge hii ni yangu au ninaheshimu kuisajili.
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-nav">
+      <button class="btn-back" onclick="prevStep(5)">← Rudi</button>
+      <button class="btn-next" onclick="submitForm()" style="background:var(--gold);box-shadow:0 4px 16px rgba(232,160,32,0.3)">
+        🚀 Wasilisha Ombi la Usajili
+      </button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Hongera! Umefanikiwa!</div>
+    <div class="success-sub">
+      Ombi lako la usajili limepokelewa. Timu yetu itakipitia ndani ya <strong>masaa 24</strong> na utapata ujumbe wa uthibitisho kwa simu yako.
+    </div>
+    <div class="success-steps">
+      <div class="success-step">
+        <div class="s-num">1</div>
+        <div class="s-text"><strong>Sasa hivi:</strong> Ombi lako limepokelewa — timu yetu imearifiwa</div>
+      </div>
+      <div class="success-step">
+        <div class="s-num">2</div>
+        <div class="s-text"><strong>Masaa 24:</strong> Tutakipiria ombi lako na kukutumia SMS ya uthibitisho</div>
+      </div>
+      <div class="success-step">
+        <div class="s-num">3</div>
+        <div class="s-text"><strong>Baada ya kuthibitishwa:</strong> Lodge yako itaonekana kwenye app kwa wasafiri wote Tanzania</div>
+      </div>
+    </div>
+    <button class="btn-home" onclick="location.reload()">🏠 Rudi Mwanzo</button>
+  </div>
+
+</div>
+
+<!-- SOCIAL PROOF -->
+<div class="social-proof" id="socialProof">
+  <div class="social-inner">
+    <div class="sp-title">Wamiliki Wanaofurahi na SafariSalama</div>
+    <div class="testimonials">
+      <div class="testimonial">
+        <div class="test-text">"Tangu nijisajili nimepata wasafiri 12 wa ziada kwa mwezi. Ilikuwa rahisi sana — chini ya dakika 10!"</div>
+        <div class="test-author">
+          <div class="test-avatar">👨</div>
+          <div><div class="test-name">Hassan Mwamba</div><div class="test-city">Kigoma Sunset Lodge · Kigoma</div></div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <div class="test-text">"Mara ya kwanza nilisita, lakini ilikuwa bure na rahisi. Sasa lodge yangu inajaza kila wikendi."</div>
+        <div class="test-author">
+          <div class="test-avatar">👩</div>
+          <div><div class="test-name">Fatuma Ally</div><div class="test-city">Mama Africa Inn · Mtwara</div></div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <div class="test-text">"Wasafiri wanakuja tayari wamefanya booking. Sijali tena kuhusu kutafuta wateja — wanakuja wenyewe."</div>
+        <div class="test-author">
+          <div class="test-avatar">👨</div>
+          <div><div class="test-name">Peter Makundi</div><div class="test-city">Dodoma Business Lodge · Dodoma</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+let selectedPlan = 'free';
+let uploadedPhotos = [];
+
+const amenitiesList = [
+  {icon:'📶', label:'WiFi'}, {icon:'🌡️', label:'AC (Hewa Baridi)'},
+  {icon:'🚿', label:'Maji Moto'}, {icon:'🍳', label:'Chakula cha Asubuhi'},
+  {icon:'🅿️', label:'Parking'}, {icon:'🔒', label:'Ulinzi 24hr'},
+  {icon:'📺', label:'TV'}, {icon:'🧺', label:'Kufua Nguo'},
+  {icon:'💊', label:'Msaada wa Kwanza'}, {icon:'⚡', label:'Jenereta'},
+  {icon:'🛁', label:'Bafu ya Ndani'}, {icon:'🍽️', label:'Mgahawa'},
+];
+
+// render amenities
+document.getElementById('amenitiesGrid').innerHTML = amenitiesList.map((a,i) => `
+  <label class="amenity-check" id="am${i}" onclick="toggleAmenity(${i})">
+    <input type="checkbox" id="amCb${i}">
+    <div class="ach-dot"></div>
+    <span class="ach-label">${a.icon} ${a.label}</span>
+  </label>`).join('');
+
+function toggleAmenity(i) {
+  const el = document.getElementById('am'+i);
+  const cb = document.getElementById('amCb'+i);
+  cb.checked = !cb.checked;
+  el.classList.toggle('checked', cb.checked);
+}
+
+// step navigation
+function nextStep(from) {
+  if (!validateStep(from)) return;
+  updateProgress(from, from + 1);
+  document.getElementById('step'+from).classList.remove('active');
+  currentStep = from + 1;
+  if (currentStep === 5) buildSummary();
+  document.getElementById('step'+currentStep).classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function prevStep(from) {
+  updateProgress(from, from - 1);
+  document.getElementById('step'+from).classList.remove('active');
+  currentStep = from - 1;
+  document.getElementById('step'+currentStep).classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function updateProgress(from, to) {
+  for (let i = 1; i <= 5; i++) {
+    const circle = document.getElementById('sc'+i);
+    const label = document.getElementById('sl'+i);
+    circle.className = 'step-circle';
+    label.className = 'step-label';
+    if (i < to) { circle.classList.add('done'); circle.textContent = '✓'; label.classList.add('done'); }
+    else if (i === to) { circle.classList.add('active'); circle.textContent = i; label.classList.add('active'); }
+    else { circle.textContent = i; }
+    if (i < 5) {
+      document.getElementById('line'+i).className = 'step-line' + (i < to ? ' done' : '');
+    }
+  }
+}
+
+function validateStep(step) {
+  if (step === 1) {
+    if (!document.getElementById('fname').value.trim()) { alert('Tafadhali jaza jina lako la kwanza'); return false; }
+    if (!document.getElementById('phone').value.trim()) { alert('Tafadhali jaza namba yako ya simu'); return false; }
+    if (!document.getElementById('password').value || document.getElementById('password').value.length < 6) { alert('Nywila lazima iwe na herufi angalau 6'); return false; }
+  }
+  if (step === 2) {
+    if (!document.getElementById('lodgeName').value.trim()) { alert('Tafadhali jaza jina la lodge'); return false; }
+    if (!document.getElementById('lodgeCity').value) { alert('Tafadhali chagua mji'); return false; }
+    if (!document.getElementById('lodgePrice').value) { alert('Tafadhali weka bei ya chumba'); return false; }
+    if (!document.getElementById('lodgeDesc').value.trim()) { alert('Tafadhali andika maelezo ya lodge'); return false; }
+  }
+  return true;
+}
+
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.getElementById('plan-free').classList.toggle('selected', plan === 'free');
+  document.getElementById('plan-pro').classList.toggle('selected', plan === 'pro');
+}
+
+function triggerUpload() { document.getElementById('fileInput').click(); }
+
+function handlePhotos(input) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadedPhotos.push(e.target.result);
+      renderPreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPreviews() {
+  const emojis = ['🛏️','🛁','🌅','🏨','🌿'];
+  document.getElementById('photoPreviews').innerHTML = uploadedPhotos.map((src,i) => `
+    <div class="photo-preview">
+      ${src.startsWith('data:image') ? `<img src="${src}" style="width:100%;height:100%;object-fit:cover">` : `<span>${emojis[i%5]}</span>`}
+      <button class="photo-del" onclick="removePhoto(${i})">✕</button>
+    </div>`).join('') +
+    (uploadedPhotos.length < 10 ? `<div class="photo-preview" onclick="triggerUpload()" style="cursor:pointer;border:2px dashed var(--border);background:var(--cream)"><span style="font-size:1.5rem">➕</span></div>` : '');
+}
+
+function removePhoto(i) {
+  uploadedPhotos.splice(i, 1);
+  renderPreviews();
+}
+
+function buildSummary() {
+  const amenities = amenitiesList
+    .filter((a,i) => document.getElementById('amCb'+i).checked)
+    .map(a => a.icon+' '+a.label).join(', ') || 'Hakuna';
+
+  document.getElementById('summaryCard').innerHTML = `
+    <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:16px">📋 Muhtasari wa Usajili Wako</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${row('👤 Mmiliki', document.getElementById('fname').value+' '+document.getElementById('lname').value)}
+      ${row('📱 Simu', document.getElementById('phone').value)}
+      ${row('🏨 Jina la Lodge', document.getElementById('lodgeName').value)}
+      ${row('📍 Mji', document.getElementById('lodgeCity').value+' — '+document.getElementById('lodgeArea').value)}
+      ${row('💰 Bei', 'TZS '+parseInt(document.getElementById('lodgePrice').value||0).toLocaleString()+'/usiku')}
+      ${row('🛏️ Vyumba', document.getElementById('lodgeRooms').value||'Haijajazwa')}
+      ${row('✅ Huduma', amenities)}
+      ${row('📷 Picha', uploadedPhotos.length+' zilipakiwa')}
+      ${row('⭐ Mpango', selectedPlan === 'pro' ? 'Pro (TZS 50,000/mwaka)' : 'Bure (TZS 0/mwaka)')}
+    </div>`;
+}
+
+function row(label, value) {
+  return `<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+    <span style="color:var(--muted);flex-shrink:0">${label}</span>
+    <span style="font-weight:600;text-align:right">${value}</span>
+  </div>`;
+}
+
+function submitForm() {
+  if (!document.getElementById('agreeTerms').checked) {
+    alert('Tafadhali kukubaliana na masharti ya matumizi'); return;
+  }
+  // hide form elements
+  document.getElementById('step5').classList.remove('active');
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('socialProof').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// demo: add some photos on load for preview
+window.addEventListener('load', () => {
+  uploadedPhotos = ['demo1','demo2','demo3'];
+  renderPreviews();
+  document.getElementById('photoPreviews').querySelectorAll('.photo-preview').forEach((el, i) => {
+    const emojis = ['🛏️','🛁','🌅'];
+    if (!el.querySelector('img') && !el.querySelector('span[style]')) {
+      el.innerHTML = `<span style="font-size:2rem">${emojis[i]||'📷'}</span><button class="photo-del" onclick="removePhoto(${i})">✕</button>`;
+    }
+  });
+});
+</script>
+</body>
+</html>
