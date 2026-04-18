@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SafariSalama — Sajili Lodge Yako Bure</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --green: #1a6b3a;
@@ -850,16 +851,66 @@ function row(label, value) {
   </div>`;
 }
 
-function submitForm() {
+// ===== SUPABASE =====
+const SUPABASE_URL = 'https://xwwleevjwvnqhzlcjsym.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_SCR1M3atMU6dnugeJ3E_kg_vPFfKGxD';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function submitForm() {
   if (!document.getElementById('agreeTerms').checked) {
     alert('Tafadhali kukubaliana na masharti ya matumizi'); return;
   }
-  // hide form elements
-  document.getElementById('step5').classList.remove('active');
-  document.getElementById('progressWrap').style.display = 'none';
-  document.getElementById('socialProof').style.display = 'none';
-  document.getElementById('successScreen').style.display = 'block';
-  window.scrollTo({top: 0, behavior: 'smooth'});
+
+  // Gather all data
+  const fname = document.getElementById('fname').value.trim();
+  const lname = document.getElementById('lname').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const lodgeName = document.getElementById('lodgeName').value.trim();
+  const lodgeCity = document.getElementById('lodgeCity').value;
+  const lodgeArea = document.getElementById('lodgeArea').value.trim();
+  const lodgePrice = parseInt(document.getElementById('lodgePrice').value) || 0;
+  const lodgeRooms = parseInt(document.getElementById('lodgeRooms').value) || 0;
+  const lodgeDesc = document.getElementById('lodgeDesc').value.trim();
+  const amenities = amenitiesList
+    .filter((a,i) => document.getElementById('amCb'+i).checked)
+    .map(a => a.label);
+
+  // Show loading
+  const btn = document.querySelector('#step5 .btn-next');
+  if (btn) { btn.textContent = '⏳ Inatuma...'; btn.disabled = true; }
+
+  try {
+    const { error } = await db.from('lodges').insert([{
+      name: lodgeName,
+      city: lodgeCity,
+      area: lodgeArea,
+      price: lodgePrice,
+      rooms: lodgeRooms,
+      description: lodgeDesc,
+      amenities: amenities,
+      phone: phone,
+      owner_name: fname + ' ' + lname,
+      status: 'pending'
+    }]);
+
+    if (error) {
+      alert('Hitilafu ya mtandao: ' + error.message);
+      if (btn) { btn.textContent = '🚀 Wasilisha Ombi la Usajili'; btn.disabled = false; }
+      return;
+    }
+
+    // Success — show success screen
+    document.getElementById('step5').classList.remove('active');
+    document.getElementById('progressWrap').style.display = 'none';
+    document.getElementById('socialProof').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+
+  } catch(e) {
+    alert('Hitilafu: ' + e.message);
+    if (btn) { btn.textContent = '🚀 Wasilisha Ombi la Usajili'; btn.disabled = false; }
+  }
 }
 
 // demo: add some photos on load for preview
