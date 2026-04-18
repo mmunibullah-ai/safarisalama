@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SafariSalama — Jikute Mwenyeji Kila Mji</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --green: #1a6b3a;
@@ -604,9 +605,227 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const lodges = [
-  {
-    name: "Kigoma Sunset Lodge",
+// ===== SUPABASE =====
+const SUPABASE_URL = 'https://xwwleevjwvnqhzlcjsym.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_SCR1M3atMU6dnugeJ3E_kg_vPFfKGxD';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allLodges = [];
+let currentLodge = null;
+
+const emojis = ['🏨','🌅','🌴','🏛️','🌿','🌊','⛰️','🌍','🏖️','🦁'];
+
+// ===== LOAD LODGES FROM DATABASE =====
+async function loadLodges() {
+  const grid = document.getElementById('lodgesGrid');
+  grid.innerHTML = `<div style="text-align:center;padding:48px;color:var(--muted);grid-column:1/-1">
+    <div style="font-size:2rem;margin-bottom:12px">⏳</div>
+    <div>Inapakia lodges...</div>
+  </div>`;
+
+  const { data, error } = await db
+    .from('lodges')
+    .select('*')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    grid.innerHTML = `<div style="text-align:center;padding:48px;color:var(--muted);grid-column:1/-1">
+      Hitilafu ya kupakia lodges. Jaribu tena.</div>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    grid.innerHTML = `<div style="text-align:center;padding:48px;color:var(--muted);grid-column:1/-1">
+      <div style="font-size:2rem;margin-bottom:12px">🏨</div>
+      <div>Hakuna lodges bado. Jiunge nawe kuwa wa kwanza!</div>
+    </div>`;
+    return;
+  }
+
+  allLodges = data;
+  renderCards(allLodges);
+}
+
+function renderCards(data) {
+  const grid = document.getElementById('lodgesGrid');
+  if (!data || data.length === 0) {
+    grid.innerHTML = `<div style="text-align:center;padding:48px;color:var(--muted);grid-column:1/-1">
+      Hakuna lodges zilizopatikana.</div>`;
+    return;
+  }
+  grid.innerHTML = data.map((l, i) => `
+    <div class="lodge-card" onclick="openModal('${l.id}')">
+      <div class="card-img">
+        <div style="font-size:3.5rem">${emojis[i % emojis.length]}</div>
+        <div class="card-badge">✅ Imekaguliwa</div>
+        <div class="card-fav">🤍</div>
+      </div>
+      <div class="card-body">
+        <div class="card-location">📍 ${l.area || l.city}</div>
+        <div class="card-name">${l.name}</div>
+        <div class="card-amenities">
+          ${(l.amenities||[]).slice(0,4).map(a => `<span class="amenity">${a}</span>`).join('')}
+        </div>
+        <div class="card-footer">
+          <div>
+            <div class="card-price">
+              <span class="price-amount">TZS ${(l.price||0).toLocaleString()}</span>
+              <span class="price-unit">/usiku</span>
+            </div>
+            <div class="card-rating">
+              <span class="stars">★★★★★</span>
+              <span class="rating-count">${l.rating||'Mpya'}</span>
+            </div>
+          </div>
+          <button class="btn-book">Angalia</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function openModal(id) {
+  const l = allLodges.find(x => x.id === id);
+  if (!l) return;
+  currentLodge = l;
+
+  // Load bodaboda for this lodge
+  const { data: boda } = await db.from('bodaboda')
+    .select('*').eq('lodge_name', l.name).eq('status','active');
+
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-header">
+      <div></div>
+      <button class="close-btn" onclick="closeModalBtn()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-img" style="font-size:4rem">🏨</div>
+      <div class="modal-name">${l.name}</div>
+      <div class="modal-location">📍 ${l.area||''} · ${l.city} &nbsp;·&nbsp; ★ ${l.rating||'Mpya'}</div>
+      <div class="card-amenities" style="margin-bottom:0">
+        ${(l.amenities||[]).map(a => `<span class="amenity">${a}</span>`).join('')}
+      </div>
+      <p style="font-size:0.9rem;color:var(--muted);margin-top:14px;line-height:1.6">${l.description||''}</p>
+
+      <div style="background:var(--cream);border-radius:14px;padding:16px;margin-top:16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:0.78rem;color:var(--muted)">Bei kwa usiku</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--green);font-weight:700">TZS ${(l.price||0).toLocaleString()}</div>
+        </div>
+        <div style="font-size:0.82rem;color:var(--muted);text-align:right">
+          <div>✅ Lipia kwa M-Pesa</div>
+          <div>✅ Lipia kwa Tigopesa</div>
+        </div>
+      </div>
+
+      <div class="modal-section-title">🛵 Bodaboda Karibu na Lodge Hii</div>
+      <div class="boda-list">
+        ${boda && boda.length > 0 ? boda.map(b => `
+          <div class="boda-item">
+            <div>
+              <div class="boda-name">${b.name}</div>
+              <div class="boda-phone">${b.phone}</div>
+            </div>
+            <button class="btn-call" onclick="showToast('Unawasiliana na ${b.name}...')">📞 Piga Simu</button>
+          </div>`).join('') :
+          '<div style="color:var(--muted);font-size:0.85rem;padding:8px 0">Bodaboda bado hawajasajiliwa kwa lodge hii.</div>'
+        }
+      </div>
+
+      <button class="btn-book-full" onclick="makeBooking('${l.id}','${l.name}',${l.price})">
+        ✅ Fanya Booking Sasa
+      </button>
+    </div>
+  `;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+async function makeBooking(lodgeId, lodgeName, amount) {
+  const name = prompt('Jina lako kamili:');
+  if (!name) return;
+  const phone = prompt('Namba yako ya simu:');
+  if (!phone) return;
+
+  const { error } = await db.from('bookings').insert([{
+    lodge_name: lodgeName,
+    guest_name: name,
+    guest_phone: phone,
+    amount: amount,
+    check_in: new Date().toISOString().split('T')[0],
+    status: 'pending'
+  }]);
+
+  if (error) { showToast('Hitilafu ya booking. Jaribu tena.'); return; }
+  showToast('Booking imefanikiwa! ✅ Uthibitisho unatumwa kwa SMS');
+  closeModalBtn();
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalBtn();
+}
+function closeModalBtn() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function setCity(city) {
+  document.getElementById('searchInput').value = city;
+}
+
+function doSearch() {
+  const val = document.getElementById('searchInput').value.trim();
+  if (!val) { showToast('Tafadhali ingiza jina la mji'); return; }
+  const found = allLodges.filter(l =>
+    l.city.toLowerCase().includes(val.toLowerCase()) ||
+    (l.area||'').toLowerCase().includes(val.toLowerCase()) ||
+    l.name.toLowerCase().includes(val.toLowerCase())
+  );
+  if (found.length === 0) {
+    showToast(`Hakuna lodge zilizopatikana kwa "${val}" bado`);
+  } else {
+    renderCards(found);
+    document.getElementById('lodges').scrollIntoView({ behavior: 'smooth' });
+    showToast(`Lodges ${found.length} zimepatikana kwa ${val} ✅`);
+  }
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+// filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    if (this.textContent === 'Zote') { renderCards(allLodges); return; }
+    if (this.textContent === 'Chini ya 30,000 TZS') { renderCards(allLodges.filter(l => l.price < 30000)); return; }
+    if (this.textContent === '30K – 60K TZS') { renderCards(allLodges.filter(l => l.price >= 30000 && l.price <= 60000)); return; }
+    if (this.textContent === '60K+ TZS') { renderCards(allLodges.filter(l => l.price > 60000)); return; }
+  });
+});
+
+// bottom nav
+document.querySelectorAll('.bnav-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// Start loading lodges from database
+loadLodges();
+</script>
+</body>
+</html>
     city: "Kigoma",
     location: "Karibu na Bandari ya Kigoma",
     price: 25000,
@@ -828,18 +1047,6 @@ document.getElementById('searchInput').addEventListener('keydown', e => {
 
 // filter buttons
 document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    if (this.textContent === 'Zote') { renderCards(lodges); return; }
-    if (this.textContent === 'Chini ya 30,000 TZS') { renderCards(lodges.filter(l => l.price < 30000)); return; }
-    if (this.textContent === '30K – 60K TZS') { renderCards(lodges.filter(l => l.price >= 30000 && l.price <= 60000)); return; }
-    if (this.textContent === '60K+ TZS') { renderCards(lodges.filter(l => l.price > 60000)); return; }
-    const keyword = this.textContent;
-    renderCards(lodges.filter(l => l.amenities.some(a => a.toLowerCase().includes(keyword.toLowerCase()))));
-  });
-});
-
 // bottom nav
 document.querySelectorAll('.bnav-item').forEach(item => {
   item.addEventListener('click', function() {
@@ -847,6 +1054,9 @@ document.querySelectorAll('.bnav-item').forEach(item => {
     this.classList.add('active');
   });
 });
+
+// Start loading lodges from database
+loadLodges();
 </script>
 </body>
 </html>
